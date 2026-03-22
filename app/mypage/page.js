@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Navbar from '@/app/components/Navbar';
 import ImageCropper from '@/app/components/ImageCropper';
@@ -17,7 +17,7 @@ const COLOR_OPTIONS = [
     '#F7DC6F', '#BB8FCE', '#85C1E9', '#82E0AA', '#F8C471',
 ];
 
-export default function MyPage() {
+function MyPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const fileInputRef = useRef(null);
@@ -959,5 +959,13 @@ export default function MyPage() {
                 />
             )}
         </>
+    );
+}
+
+export default function MyPage() {
+    return (
+        <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}><div className="spinner"></div></div>}>
+            <MyPageContent />
+        </Suspense>
     );
 }
