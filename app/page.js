@@ -5,16 +5,13 @@ export default function Home() {
         <main>
             <section className="landing-hero">
                 <div className="landing-badge">
-                    <img src="/logo.png" alt="" style={{ width: '20px', height: '20px', borderRadius: '4px' }} /> Web2 × DAO ガバナンス
+                    <img src="/logo.png" alt="" style={{ width: '20px', height: '20px', borderRadius: '4px' }} /> Y2FACTORY DAO
                 </div>
                 <h1 className="landing-title">
-                    あなたの声が<br />
-                    <span className="landing-title-accent">組織を動かす</span>
+                    みんながワイワイ楽しめる世界を
                 </h1>
                 <p className="landing-desc">
-                    Y2FACTORY DAOは、活動を通じてポイントを獲得し、
-                    その貢献度でコミュニティの意思決定に参加できる
-                    SNS型ガバナンス・プラットフォームです。
+                    「みんながワイワイ楽しめる世界を」をミッションに、参加者が主体的に関与し共創を通じて価値を創出し、楽しい世界の実現と拡張を担うクリエイティブな共創コミュニティです。
                 </p>
                 <div className="landing-buttons">
                     <Link href="/login" className="btn btn-primary btn-lg">
@@ -22,33 +19,7 @@ export default function Home() {
                     </Link>
                 </div>
             </section>
-
-            <section className="landing-features">
-                <div className="feature-card">
-                    <div className="feature-icon">📱</div>
-                    <h3 className="feature-title">SNSタイムライン</h3>
-                    <p className="feature-desc">
-                        メンバーの活動や運営からのお知らせを
-                        リアルタイムでキャッチ。コメントやリアクションで交流。
-                    </p>
-                </div>
-                <div className="feature-card">
-                    <div className="feature-icon">🗳️</div>
-                    <h3 className="feature-title">ポイント投票</h3>
-                    <p className="feature-desc">
-                        獲得したポイント数に応じた重み付き投票。
-                        貢献度が高いほど、あなたの意見が反映される。
-                    </p>
-                </div>
-                <div className="feature-card">
-                    <div className="feature-icon">🔍</div>
-                    <h3 className="feature-title">透明な意思決定</h3>
-                    <p className="feature-desc">
-                        誰が、どの提案に、どれだけのポイントで投票したか。
-                        すべての集計結果が公開されます。
-                    </p>
-                </div>
-            </section>
         </main>
     );
 }
+
