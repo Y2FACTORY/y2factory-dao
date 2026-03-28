@@ -448,9 +448,10 @@ export default function AdminPage() {
     });
 
     const exportCSV = () => {
-        const headers = ['ID', 'メール', 'パスワード', '表示名', 'ロール', 'Discord ID', 'ポイント', '投稿数', 'コメント数', '投票数', 'リアクション数', '登録日', 'メモ'];
+        const headers = ['ID', '会員番号', 'メール', 'パスワード', '表示名', 'ロール', 'Discord ID', 'ポイント', '投稿数', 'コメント数', '投票数', 'リアクション数', '登録日', 'メモ'];
         const rows = filteredUsers.map(u => [
             u.id,
+            u.member_number || '',
             u.email,
             u.raw_password ? `="${String(u.raw_password)}"` : '',
             u.display_name,
