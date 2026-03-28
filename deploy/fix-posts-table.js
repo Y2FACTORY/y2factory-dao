@@ -20,6 +20,9 @@ if (schema?.sql && !schema.sql.includes('roadmap')) {
     
     db.pragma('foreign_keys = OFF');
     
+    // Drop leftover posts_new if it exists from a previous failed migration
+    db.exec('DROP TABLE IF EXISTS posts_new;');
+    
     // Check if title column exists
     const hasTitle = schema.sql.includes('title');
     console.log('Has title column:', hasTitle);
