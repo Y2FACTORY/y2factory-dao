@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Navbar from '@/app/components/Navbar';
 import ImageCropper from '@/app/components/ImageCropper';
+import SubscriptionTab from '@/app/components/SubscriptionTab';
 
 const EMOJI_OPTIONS = [
     '', '😀', '😎', '🤖', '👾', '🦊', '🐱', '🐶', '🐼', '🦁',
@@ -464,10 +465,14 @@ function MyPageContent() {
                     </button>
                     <button className={`tab-btn ${activeTab === 'governance' ? 'active' : ''}`} onClick={() => setActiveTab('governance')}>🗳️ ガバナンス</button>
                     <button className={`tab-btn ${activeTab === 'points' ? 'active' : ''}`} onClick={() => setActiveTab('points')}>ポイント履歴</button>
+                    <button className={`tab-btn ${activeTab === 'subscription' ? 'active' : ''}`} onClick={() => setActiveTab('subscription')}>⭐ プラン設定</button>
                     <button className={`tab-btn ${activeTab === 'shop' ? 'active' : ''}`} onClick={() => setActiveTab('shop')}>🛍️ ショップ</button>
                     <button className={`tab-btn ${activeTab === 'inquiry' ? 'active' : ''}`} onClick={() => setActiveTab('inquiry')}>💬 お問い合わせ</button>
                 </div>
 
+                {activeTab === 'subscription' && (
+                    <SubscriptionTab user={user} fetchData={() => fetchData(currentDb)} />
+                )}
 
                 {activeTab === 'inquiry' && (
                     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>

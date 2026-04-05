@@ -1,0 +1,20 @@
+2026/03/28 22:42:43 [warn] 96347#96347: conflicting server name "y2factory-dao.com" on 0.0.0.0:443, ignored
+2026/03/28 22:42:43 [warn] 96347#96347: conflicting server name "www.y2factory-dao.com" on 0.0.0.0:443, ignored
+2026/03/28 22:42:43 [warn] 96347#96347: conflicting server name "y2factory-dao.com" on 0.0.0.0:80, ignored
+2026/03/28 22:42:43 [warn] 96347#96347: conflicting server name "www.y2factory-dao.com" on 0.0.0.0:80, ignored
+2026/03/28 22:42:43 [notice] 96347#96347: signal process started
+2026/03/28 22:44:25 [error] 96348#96348: *39702 open() "/var/www/y2factory-dao/public/uploads/avatars/default.png" failed (2: No such file or directory), client: 153.242.8.5, server: y2factory-dao.com, request: "GET /uploads/avatars/default.png HTTP/1.1", host: "y2factory-dao.com"
+2026/03/28 22:44:39 [error] 96348#96348: *39702 open() "/var/www/y2factory-dao/public/uploads/avatars/1.png" failed (2: No such file or directory), client: 153.242.8.5, server: y2factory-dao.com, request: "GET /uploads/avatars/1.png HTTP/1.1", host: "y2factory-dao.com"
+2026/03/28 22:45:11 [error] 96348#96348: *39702 directory index of "/var/www/y2factory-dao/public/uploads/" is forbidden, client: 153.242.8.5, server: y2factory-dao.com, request: "GET /uploads/ HTTP/1.1", host: "y2factory-dao.com"
+2026/03/28 22:47:01 [error] 96348#96348: *39762 open() "/var/www/y2factory-dao/public/uploads/avatars/0967b981-f603-49d1-a21c-a2eef3886af92-414a86e0.png" failed (2: No such file or directory), client: 160.251.207.209, server: y2factory-dao.com, request: "HEAD /uploads/avatars/0967b981-f603-49d1-a21c-a2eef3886af92-414a86e0.png HTTP/1.1", host: "y2factory-dao.com"
+2026/03/28 22:47:45 [error] 96348#96348: *39768 directory index of "/var/www/y2factory-dao/public/uploads/posts/" is forbidden, client: 160.251.207.209, server: y2factory-dao.com, request: "HEAD /uploads/posts/ HTTP/1.1", host: "y2factory-dao.com"
+2026/03/28 22:49:30 [warn] 96752#96752: conflicting server name "y2factory-dao.com" on 0.0.0.0:443, ignored
+2026/03/28 22:49:30 [warn] 96752#96752: conflicting server name "www.y2factory-dao.com" on 0.0.0.0:443, ignored
+2026/03/28 22:49:30 [warn] 96752#96752: conflicting server name "y2factory-dao.com" on 0.0.0.0:80, ignored
+2026/03/28 22:49:30 [warn] 96752#96752: conflicting server name "www.y2factory-dao.com" on 0.0.0.0:80, ignored
+2026/03/28 22:49:30 [warn] 96754#96754: conflicting server name "y2factory-dao.com" on 0.0.0.0:443, ignored
+2026/03/28 22:49:30 [warn] 96754#96754: conflicting server name "www.y2factory-dao.com" on 0.0.0.0:443, ignored
+2026/03/28 22:49:30 [warn] 96754#96754: conflicting server name "y2factory-dao.com" on 0.0.0.0:80, ignored
+2026/03/28 22:49:30 [warn] 96754#96754: conflicting server name "www.y2factory-dao.com" on 0.0.0.0:80, ignored
+2026/03/28 22:49:30 [notice] 96754#96754: signal process started
+2026/03/28 22:49:30 [error] 96348#96348: *39824 directory index of "/var/www/y2factory-dao/public/uploads/posts/" is forbidden, client: 160.251.207.209, server: y2factory-dao.com, request: "HEAD /uploads/posts/ HTTP/1.1", host: "y2factory-dao.com"

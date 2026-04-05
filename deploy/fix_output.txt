@@ -1,0 +1,29 @@
+DB Path: /var/www/y2factory-dao/data/y2factory.db
+Current posts schema: CREATE TABLE posts (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      content TEXT NOT NULL,
+      post_type TEXT DEFAULT 'normal' CHECK(post_type IN ('normal','announcement')),
+      created_at TEXT DEFAULT (datetime('now')), title TEXT DEFAULT '',
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+
+-> posts table needs migration (missing roadmap in CHECK constraint)
+Has title column: true
+
+/var/www/y2factory-dao/node_modules/better-sqlite3/lib/methods/wrappers.js:9
+	this[cppdb].exec(sql);
+	            ^
+SqliteError: table posts_new already exists
+    at Database.exec (/var/www/y2factory-dao/node_modules/better-sqlite3/lib/methods/wrappers.js:9:14)
+    at Object.<anonymous> (/var/www/y2factory-dao/deploy/fix-posts-table.js:27:8)
+    at Module._compile (node:internal/modules/cjs/loader:1521:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+    at Module.load (node:internal/modules/cjs/loader:1266:32)
+    at Module._load (node:internal/modules/cjs/loader:1091:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)
+    at node:internal/main/run_main_module:28:49 {
+  code: 'SQLITE_ERROR'
+}
+
+Node.js v20.20.1

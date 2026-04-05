@@ -1,0 +1,25 @@
+DB Path: /var/www/y2factory-dao/data/y2factory.db
+Current posts schema: CREATE TABLE posts (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      content TEXT NOT NULL,
+      post_type TEXT DEFAULT 'normal' CHECK(post_type IN ('normal','announcement')),
+      created_at TEXT DEFAULT (datetime('now')), title TEXT DEFAULT '',
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+
+-> posts table needs migration (missing roadmap in CHECK constraint)
+Has title column: true
+Migrated rows: 0
+
+New posts schema: CREATE TABLE "posts" (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            content TEXT NOT NULL,
+            post_type TEXT DEFAULT 'normal' CHECK(post_type IN ('normal','announcement','roadmap')),
+            title TEXT DEFAULT '',
+            created_at TEXT DEFAULT (datetime('now')),
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+
+✅ Migration complete!
