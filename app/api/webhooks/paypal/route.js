@@ -61,7 +61,7 @@ export async function POST(req) {
                       
                     // Add Points
                     db.prepare('INSERT INTO points (id, user_id, db_name, amount, reason, granted_by) VALUES (?, ?, ?, ?, ?, ?)')
-                      .run(uuidv4(), userId, 'default', planDetails.points, `PayPalサブスク(${planDetails.name}) 自動付与`, 'system');
+                      .run(uuidv4(), userId, 'default', planDetails.points, `PayPalサブスク(${planDetails.name}) 自動付与`, null);
                       
                     // Notify User
                     db.prepare('INSERT INTO notifications (id, user_id, type, title, message, link) VALUES (?, ?, ?, ?, ?, ?)')
