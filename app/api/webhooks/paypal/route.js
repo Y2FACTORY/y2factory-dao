@@ -44,7 +44,13 @@ export async function POST(req) {
         else if (event_type === 'BILLING.SUBSCRIPTION.PAYMENT.COMPLETED' || event_type === 'PAYMENT.SALE.COMPLETED') {
             // A payment went through! Add points and update role.
             const subId = resource.billing_agreement_id || resource.id; 
-            const subRecord = db.prepare('SELECT * FROM subscriptions WHERE paypal_subscription_id = ?').get(subId);
+            let subRecord = db.prepare('SELECT * FROM subscriptions WHERE paypal_subscription_id = ?').get(subId);
+            
+            // Webhook race condition mitigation (ACTIVATED might lag behind PAYMENT.COMPLETED)
+            if (!subRecord) {
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                subRecord = db.prepare('SELECT * FROM subscriptions WHERE paypal_subscription_id = ?').get(subId);
+            }
             
             if (subRecord) {
                 const userId = subRecord.user_id;
