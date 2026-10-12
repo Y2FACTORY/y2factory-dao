@@ -17,7 +17,13 @@ export async function PUT(request) {
 
         if (avatarColor !== undefined) { updates.push('avatar_color = ?'); values.push(avatarColor); }
         if (avatarEmoji !== undefined) { updates.push('avatar_emoji = ?'); values.push(avatarEmoji); }
-        if (avatarImage !== undefined) { updates.push('avatar_image = ?'); values.push(avatarImage); }
+        // 画像アイコン機能は廃止。既存画像のクリア（空文字）のみ受け付ける
+        if (avatarImage !== undefined) {
+            if (avatarImage !== '') {
+                return NextResponse.json({ error: '画像アイコンは設定できません' }, { status: 400 });
+            }
+            updates.push('avatar_image = ?'); values.push('');
+        }
         if (displayName !== undefined && displayName.trim()) { updates.push('display_name = ?'); values.push(displayName.trim()); }
         if (discordId !== undefined) { updates.push('discord_id = ?'); values.push(discordId); }
 
