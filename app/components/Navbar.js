@@ -33,7 +33,7 @@ export default function Navbar() {
     };
 
     const links = [
-        { href: '/dashboard', label: '投票', shortLabel: '投票', icon: '🗳️' },
+        { href: '/governance', label: '投票', shortLabel: '投票', icon: '🗳️' },
         { href: '/suggestions', label: '提案', shortLabel: '提案', icon: '💡' },
         { href: '/mypage', label: 'マイページ', shortLabel: 'マイページ', icon: '👤' },
     ];

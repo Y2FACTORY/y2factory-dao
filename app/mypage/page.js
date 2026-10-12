@@ -22,7 +22,7 @@ function MyPageContent() {
     const [user, setUser] = useState(null);
     const [data, setData] = useState(null);
     const [currentDb, setCurrentDb] = useState('default');
-    const VALID_TABS = ['notifications', 'governance', 'points'];
+    const VALID_TABS = ['notifications', 'points'];
     const initialTab = searchParams.get('tab');
     const [activeTab, setActiveTab] = useState(VALID_TABS.includes(initialTab) ? initialTab : 'notifications');
 
@@ -312,7 +312,6 @@ function MyPageContent() {
                             }}>{unreadCount}</span>
                         )}
                     </button>
-                    <button className={`tab-btn ${activeTab === 'governance' ? 'active' : ''}`} onClick={() => setActiveTab('governance')}>🗳️ ガバナンス</button>
                     <button className={`tab-btn ${activeTab === 'points' ? 'active' : ''}`} onClick={() => setActiveTab('points')}>ポイント履歴</button>
                 </div>
 
@@ -345,64 +344,6 @@ function MyPageContent() {
                 )}
 
 
-
-                {activeTab === 'governance' && (() => {
-                    const now = new Date();
-                    const getEffectiveStatus = (p) => {
-                        if (p.status === 'active' && p.deadline && new Date(p.deadline) < now) return 'closed';
-                        return p.status;
-                    };
-                    const filtered = proposalFilter === 'all'
-                        ? proposals
-                        : proposals.filter(p => getEffectiveStatus(p) === proposalFilter);
-                    return (
-                        <div className="animate-fade-in">
-                            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
-                                <button className={`btn ${proposalFilter === 'all' ? 'btn-primary' : 'btn-secondary'} btn-sm`} onClick={() => setProposalFilter('all')}>すべて</button>
-                                <button className={`btn ${proposalFilter === 'active' ? 'btn-primary' : 'btn-secondary'} btn-sm`} onClick={() => setProposalFilter('active')}>投票受付中</button>
-                                <button className={`btn ${proposalFilter === 'closed' ? 'btn-primary' : 'btn-secondary'} btn-sm`} onClick={() => setProposalFilter('closed')}>終了</button>
-                            </div>
-                            {filtered.length === 0 ? (
-                                <div className="card">
-                                    <div className="empty-state">
-                                        <div className="empty-icon">🗳️</div>
-                                        <div className="empty-title">プロポーザルがありません</div>
-                                        <div className="empty-desc">運営がプロポーザルを作成すると、ここに表示されます</div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="grid-2">
-                                    {filtered.map(p => {
-                                        const effStatus = getEffectiveStatus(p);
-                                        return (
-                                            <div key={p.id} className="proposal-card" onClick={() => router.push(`/governance/${p.id}`)} style={{ cursor: 'pointer' }}>
-                                                <div className="flex-between">
-                                                    <span className={`proposal-status ${effStatus === 'active' ? 'status-active' : 'status-closed'}`}>
-                                                        {effStatus === 'active' ? '🟢 投票受付中' : '⬜ 終了'}
-                                                    </span>
-                                                    {p.deadline && (
-                                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                                                            期限: {new Date(p.deadline).toLocaleDateString('ja-JP')}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <h3 className="proposal-title">{p.title}</h3>
-                                                <p className="proposal-desc">
-                                                    {p.description.length > 100 ? p.description.slice(0, 100) + '...' : p.description}
-                                                </p>
-                                                <div className="proposal-stats">
-                                                    <span className="proposal-stat">👤 {p.voter_count} 投票者</span>
-                                                    <span className="proposal-stat">⚡ {p.total_votes?.toLocaleString()} pt</span>
-                                                    <span className="proposal-stat">📊 {p.options?.length} 選択肢</span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
-                    );
-                })()}
 
                 {activeTab === 'notifications' && (
                     <div className="animate-fade-in">
