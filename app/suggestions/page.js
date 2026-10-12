@@ -90,9 +90,7 @@ export default function SuggestionsPage() {
                                         </div>
                                         {r.description && <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6, whiteSpace: 'pre-line', marginBottom: '0.5rem' }}>{r.description}</div>}
                                         <div style={{ display: 'flex', gap: '1rem', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                                            {r.deadline && <span>📅 期限: {new Date(r.deadline).toLocaleString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>}
-                                            {r.target_roles?.length > 0 && <span>👥 対象: {r.target_roles.join(', ')}</span>}
-                                        </div>
+                                            {r.deadline && <span>📅 期限: {new Date(r.deadline).toLocaleString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>}                                        </div>
                                     </div>
 
                                     {/* Expanded submission form */}

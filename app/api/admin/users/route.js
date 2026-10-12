@@ -19,7 +19,6 @@ export async function GET() {
         u.role,
         u.member_number,
         u.admin_memo,
-        u.display_role,
         u.discord_id,
         u.raw_password,
         u.created_at,
@@ -47,10 +46,14 @@ export async function POST(request) {
             return NextResponse.json({ error: '管理者権限が必要です' }, { status: 403 });
         }
 
-        const { email, password, displayName, memberNumber, discordId } = await request.json();
+        const { email, password, displayName, memberNumber, discordId, role } = await request.json();
         if (!email || !password || !displayName) {
             return NextResponse.json({ error: 'メール、パスワード、表示名は必須です' }, { status: 400 });
         }
+        if (role !== undefined && role !== 'admin' && role !== 'member') {
+            return NextResponse.json({ error: '権限の値が不正です' }, { status: 400 });
+        }
+        const newRole = role === 'admin' ? 'admin' : 'member';
 
         const db = getDb();
         const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
@@ -64,8 +67,8 @@ export async function POST(request) {
         const avatarColor = colors[Math.floor(Math.random() * colors.length)];
 
         db.prepare(
-            'INSERT INTO users (id, email, password_hash, display_name, avatar_color, member_number, discord_id, raw_password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-        ).run(id, email, passwordHash, displayName, avatarColor, memberNumber || '', discordId || '', String(password));
+            'INSERT INTO users (id, email, password_hash, display_name, role, avatar_color, member_number, discord_id, raw_password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        ).run(id, email, passwordHash, displayName, newRole, avatarColor, memberNumber || '', discordId || '', String(password));
 
         // Give welcome points
         db.prepare(
@@ -87,9 +90,15 @@ export async function PUT(request) {
             return NextResponse.json({ error: '管理者権限が必要です' }, { status: 403 });
         }
 
-        const { userId, displayName, email, password, memberNumber, adminMemo, displayRole, discordId } = await request.json();
+        const { userId, displayName, email, password, memberNumber, adminMemo, role, discordId } = await request.json();
         if (!userId) {
             return NextResponse.json({ error: 'ユーザーIDが必要です' }, { status: 400 });
+        }
+        if (role !== undefined && role !== 'admin' && role !== 'member') {
+            return NextResponse.json({ error: '権限の値が不正です' }, { status: 400 });
+        }
+        if (role === 'member' && userId === user.id) {
+            return NextResponse.json({ error: '自分自身の管理者権限は外せません' }, { status: 400 });
         }
 
         const db = getDb();
@@ -123,11 +132,8 @@ export async function PUT(request) {
         if (adminMemo !== undefined) {
             db.prepare('UPDATE users SET admin_memo = ? WHERE id = ?').run(adminMemo, userId);
         }
-        if (displayRole !== undefined) {
-            db.prepare('UPDATE users SET display_role = ? WHERE id = ?').run(displayRole, userId);
-            // Sync internal role: '管理者' → admin, others → member
-            const internalRole = displayRole === '管理者' ? 'admin' : 'member';
-            db.prepare('UPDATE users SET role = ? WHERE id = ?').run(internalRole, userId);
+        if (role !== undefined) {
+            db.prepare('UPDATE users SET role = ? WHERE id = ?').run(role, userId);
         }
         if (discordId !== undefined) {
             db.prepare('UPDATE users SET discord_id = ? WHERE id = ?').run(discordId, userId);

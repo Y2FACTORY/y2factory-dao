@@ -181,23 +181,6 @@ function MyPageContent() {
                         }}>{user.member_number}</div>
                     )}
                     <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{user.display_name}</div>
-                    {(() => {
-                        const displayRole = user.display_role || 'Y2FDメンバー';
-                        const roleColorMap = { 'Y2FDメンバー': '#43E97B', '主任': '#00C9FF', '部長': '#F9A826', '役員': '#E040FB', '管理者': '#6C63FF' };
-                        const roleColor = roleColorMap[displayRole] || '#6C63FF';
-                        return (
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', justifyContent: 'center', marginTop: '0.5rem' }}>
-                                <span style={{
-                                    display: 'inline-flex', alignItems: 'center',
-                                    padding: '0.2rem 0.75rem', borderRadius: '99px',
-                                    background: roleColor + '22', border: `1px solid ${roleColor}55`,
-                                    color: roleColor, fontSize: '0.75rem', fontWeight: 600,
-                                }}>
-                                    {displayRole}
-                                </span>
-                            </div>
-                        );
-                    })()}
 
                     {/* Avatar Editor */}
                     {showAvatarEditor && (
@@ -354,8 +337,8 @@ function MyPageContent() {
                                 { icon: '⚔️', name: 'ランブル報酬', desc: '1勝利ごとに付与', pts: '50P', color: 'var(--success)' },
                                 { icon: '👋', name: '挨拶ミッション報酬', desc: 'ミッション達成時に付与', pts: '1,000P', color: 'var(--success)' },
                                 { icon: '⬆️', name: 'レベルアップ報酬', desc: 'レベル × 100P', pts: 'Lv × 100P', color: 'var(--info)' },
-                            ].map((item, i) => (
-                                <div key={i} style={{ padding: '0.75rem 1.25rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            ].map((item, i, arr) => (
+                                <div key={i} style={{ padding: '0.75rem 1.25rem', borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                                         <span style={{ fontSize: '1.25rem' }}>{item.icon}</span>
                                         <div>
@@ -366,26 +349,6 @@ function MyPageContent() {
                                     <div style={{ fontWeight: 800, fontSize: '0.95rem', color: item.color, background: item.color === 'var(--info)' ? 'rgba(0,201,255,0.1)' : 'rgba(67,233,123,0.1)', padding: '0.2rem 0.6rem', borderRadius: '99px' }}>{item.pts}</div>
                                 </div>
                             ))}
-                            <div style={{ padding: '0.75rem 1.25rem' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-                                    <span style={{ fontSize: '1.25rem' }}>👑</span>
-                                    <div>
-                                        <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>役職報酬</div>
-                                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>毎月付与</div>
-                                    </div>
-                                </div>
-                                <div style={{ marginLeft: '2rem', padding: '0.5rem 0.75rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
-                                    {[
-                                        { role: 'レクレーションスタッフ', points: '月 2,000P', color: '#43E97B' },
-                                        { role: 'コミュニティマネージャー', points: '月 3,000P', color: '#00C9FF' },
-                                    ].map((r, i) => (
-                                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.4rem 0', borderBottom: i < 1 ? '1px solid var(--border)' : 'none' }}>
-                                            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: r.color }}>{r.role}</span>
-                                            <span style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--success)' }}>{r.points}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
                         </div>
 
                         {/* Section 1: はじめに */}
@@ -407,7 +370,7 @@ function MyPageContent() {
                             icon: '💰', title: 'ポイントについて',
                             items: [
                                 { q: 'ポイントの種類', a: '「累計ポイント」は運営から付与されたポイントの合計です。「保有ポイント」は投票に使える現在の残高です。' },
-                                { q: 'ポイント獲得方法', a: 'ポイント表タブで各種報酬の詳細を確認できます。ウェルカムボーナス、友達紹介ボーナス（紹介者と被紹介者の両方に付与）、ランブル勝利、レベルアップ、役職報酬などがあります。' },
+                                { q: 'ポイント獲得方法', a: 'ポイント表タブで各種報酬の詳細を確認できます。ウェルカムボーナス、友達紹介ボーナス（紹介者と被紹介者の両方に付与）、ランブル勝利、挨拶ミッション、レベルアップなどがあります。' },
                                 { q: 'ポイントの消費', a: '投票時に指定したポイントが保有ポイントから差し引かれます。ただし累計ポイントには影響しません。' },
                             ]
                         }, {

@@ -70,6 +70,7 @@ export default function AdminPage() {
     const [newUserName, setNewUserName] = useState('');
     const [newUserMemberNum, setNewUserMemberNum] = useState('');
     const [newUserDiscordId, setNewUserDiscordId] = useState('');
+    const [newUserIsAdmin, setNewUserIsAdmin] = useState(false);
     const [createUserMsg, setCreateUserMsg] = useState('');
 
     // Edit user
@@ -79,7 +80,7 @@ export default function AdminPage() {
     const [editUserPassword, setEditUserPassword] = useState('');
     const [editUserMemberNum, setEditUserMemberNum] = useState('');
     const [editUserMemo, setEditUserMemo] = useState('');
-    const [editUserDisplayRole, setEditUserDisplayRole] = useState('Y2FDメンバー');
+    const [editUserIsAdmin, setEditUserIsAdmin] = useState(false);
     const [editUserDiscordId, setEditUserDiscordId] = useState('');
     const [editUserMsg, setEditUserMsg] = useState('');
 
@@ -98,10 +99,8 @@ export default function AdminPage() {
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
         return now.toISOString().slice(0, 16);
     });
-    const [ideaRoles, setIdeaRoles] = useState([]);
     const [ideaMsg, setIdeaMsg] = useState('');
     const [expandedIdea, setExpandedIdea] = useState(null);
-    const allRoles = ['Y2FDメンバー', '主任', '部長', '役員', '管理者'];
 
     const fetchAll = useCallback(async () => {
         const userRes = await fetch('/api/auth/me');
@@ -140,22 +139,6 @@ export default function AdminPage() {
     useEffect(() => {
         fetchAll();
     }, [fetchAll]);
-
-    // === Display Role Change ===
-    const changeDisplayRole = async (userId, newDisplayRole, displayName) => {
-        if (!confirm(`${displayName} のロールを「${newDisplayRole}」に変更しますか？`)) return;
-        const res = await fetch('/api/admin/roles', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, displayRole: newDisplayRole }),
-        });
-        const data = await res.json();
-        if (data.success) {
-            fetchAll();
-        } else {
-            alert(data.error || 'ロール変更に失敗しました');
-        }
-    };
 
     // === Point Grant / Deduct ===
     const handleGrantPoints = async (e) => {
@@ -412,18 +395,18 @@ export default function AdminPage() {
     const filteredUsers = allUsers.filter(u => {
         if (!userSearch) return true;
         const s = userSearch.toLowerCase();
-        return u.display_name?.toLowerCase().includes(s) || u.email?.toLowerCase().includes(s) || (u.display_role || '').toLowerCase().includes(s);
+        return u.display_name?.toLowerCase().includes(s) || u.email?.toLowerCase().includes(s);
     });
 
     const exportCSV = () => {
-        const headers = ['ID', '会員番号', 'メール', 'パスワード', '表示名', 'ロール', 'Discord ID', 'ポイント', '投稿数', 'コメント数', '投票数', 'リアクション数', '登録日', 'メモ'];
+        const headers = ['ID', '会員番号', 'メール', 'パスワード', '表示名', '権限', 'Discord ID', 'ポイント', '投稿数', 'コメント数', '投票数', 'リアクション数', '登録日', 'メモ'];
         const rows = filteredUsers.map(u => [
             u.id,
             u.member_number || '',
             u.email,
             u.raw_password ? `="${String(u.raw_password)}"` : '',
             u.display_name,
-            u.display_role || u.role,
+            u.role === 'admin' ? '管理者' : 'メンバー',
             u.discord_id || '',
             u.total_points,
             u.post_count,
@@ -547,12 +530,12 @@ export default function AdminPage() {
                                 const res = await fetch('/api/admin/users', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ email: newUserEmail, password: newUserPassword, displayName: newUserName, memberNumber: newUserMemberNum, discordId: newUserDiscordId }),
+                                    body: JSON.stringify({ email: newUserEmail, password: newUserPassword, displayName: newUserName, memberNumber: newUserMemberNum, discordId: newUserDiscordId, role: newUserIsAdmin ? 'admin' : 'member' }),
                                 });
                                 const d = await res.json();
                                 if (d.success) {
                                     setCreateUserMsg('✅ ユーザーを作成しました');
-                                    setNewUserEmail(''); setNewUserPassword(''); setNewUserName(''); setNewUserMemberNum(''); setNewUserDiscordId('');
+                                    setNewUserEmail(''); setNewUserPassword(''); setNewUserName(''); setNewUserMemberNum(''); setNewUserDiscordId(''); setNewUserIsAdmin(false);
                                     fetchAll();
                                 } else {
                                     setCreateUserMsg(`❌ ${d.error}`);
@@ -581,6 +564,10 @@ export default function AdminPage() {
                                         <input type="text" className="form-input" placeholder="例: username" value={newUserDiscordId} onChange={e => setNewUserDiscordId(e.target.value)} />
                                     </div>
                                 </div>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', marginBottom: '0.75rem' }}>
+                                    <input type="checkbox" checked={newUserIsAdmin} onChange={e => setNewUserIsAdmin(e.target.checked)} />
+                                    管理者権限を付与する
+                                </label>
                                 {createUserMsg && <div className={createUserMsg.startsWith('✅') ? 'success-message' : 'error-message'} style={{ marginBottom: '0.5rem' }}>{createUserMsg}</div>}
                                 <button type="submit" className="btn btn-primary">➕ ユーザーを作成</button>
                             </form>
@@ -604,9 +591,8 @@ export default function AdminPage() {
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                                 {filteredUsers.map(u => {
-                                    const displayRole = u.display_role || 'Y2FDメンバー';
-                                    const roleColorMap = { 'Y2FDメンバー': '#43E97B', '主任': '#00C9FF', '部長': '#F9A826', '役員': '#E040FB', '管理者': '#6C63FF' };
-                                    const roleColor = roleColorMap[displayRole] || '#6C63FF';
+                                    const isAdmin = u.role === 'admin';
+                                    const roleColor = isAdmin ? '#6C63FF' : '#43E97B';
                                     return (
                                         <div key={u.id} className="card" style={{ padding: '1rem', marginBottom: '0.75rem', borderLeft: `4px solid ${roleColor}` }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
@@ -620,26 +606,12 @@ export default function AdminPage() {
                                                                 color: 'var(--accent-primary)', fontSize: '0.7rem', fontWeight: 700, fontFamily: 'monospace',
                                                             }}>{u.member_number}</span>
                                                         )}
-                                                        <select
-                                                            value={displayRole}
-                                                            onChange={e => changeDisplayRole(u.id, e.target.value, u.display_name)}
-                                                            style={{
-                                                                padding: '0.15rem 0.4rem', borderRadius: '99px', fontSize: '0.65rem', fontWeight: 600,
+                                                        {isAdmin && (
+                                                            <span style={{
+                                                                padding: '0.15rem 0.5rem', borderRadius: '99px', fontSize: '0.65rem', fontWeight: 600,
                                                                 background: roleColor + '22', border: `1px solid ${roleColor}44`, color: roleColor,
-                                                                cursor: 'pointer', outline: 'none', appearance: 'none',
-                                                                WebkitAppearance: 'none', MozAppearance: 'none',
-                                                                paddingRight: '1.2rem',
-                                                                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24'%3E%3Cpath fill='${encodeURIComponent(roleColor)}' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E")`,
-                                                                backgroundRepeat: 'no-repeat',
-                                                                backgroundPosition: 'right 0.3rem center',
-                                                            }}
-                                                        >
-                                                            <option value="Y2FDメンバー">Y2FDメンバー</option>
-                                                            <option value="主任">主任</option>
-                                                            <option value="部長">部長</option>
-                                                            <option value="役員">役員</option>
-                                                            <option value="管理者">管理者</option>
-                                                        </select>
+                                                            }}>管理者</span>
+                                                        )}
                                                     </div>
                                                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{u.email}</div>
                                                     {u.raw_password ? (
@@ -678,7 +650,7 @@ export default function AdminPage() {
                                                         setEditUserPassword('');
                                                         setEditUserMemberNum(u.member_number || '');
                                                         setEditUserMemo(u.admin_memo || '');
-                                                        setEditUserDisplayRole(u.display_role || 'Y2FDメンバー');
+                                                        setEditUserIsAdmin(u.role === 'admin');
                                                         setEditUserDiscordId(u.discord_id || '');
                                                         setEditUserMsg('');
                                                     }}
@@ -794,7 +766,7 @@ export default function AdminPage() {
                                                 password: editUserPassword || undefined,
                                                 memberNumber: editUserMemberNum,
                                                 adminMemo: editUserMemo,
-                                                displayRole: editUserDisplayRole,
+                                                role: editUserIsAdmin ? 'admin' : 'member',
                                                 discordId: editUserDiscordId,
                                             }),
                                         });
@@ -825,14 +797,13 @@ export default function AdminPage() {
                                                 <input type="text" className="form-input" placeholder="No.00001" value={editUserMemberNum} onChange={e => setEditUserMemberNum(e.target.value)} style={{ fontFamily: 'monospace' }} />
                                             </div>
                                             <div>
-                                                <label className="form-label">役職</label>
-                                                <select className="form-input" value={editUserDisplayRole} onChange={e => setEditUserDisplayRole(e.target.value)}>
-                                                    <option value="Y2FDメンバー">Y2FDメンバー</option>
-                                                    <option value="主任">主任</option>
-                                                    <option value="部長">部長</option>
-                                                    <option value="役員">役員</option>
-                                                    <option value="管理者">管理者</option>
-                                                </select>
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: editUser.id === user.id ? 'not-allowed' : 'pointer', fontSize: '0.9rem' }}>
+                                                    <input type="checkbox" checked={editUserIsAdmin} disabled={editUser.id === user.id} onChange={e => setEditUserIsAdmin(e.target.checked)} />
+                                                    管理者権限を付与する
+                                                </label>
+                                                {editUser.id === user.id && (
+                                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>自分自身の管理者権限は外せません</div>
+                                                )}
                                             </div>
                                             <div>
                                                 <label className="form-label">Discord ID</label>
@@ -1119,25 +1090,9 @@ export default function AdminPage() {
                                 <label className="form-label">説明（任意）</label>
                                 <textarea className="form-textarea" value={ideaDesc} onChange={e => setIdeaDesc(e.target.value)} placeholder="募集内容の説明..." style={{ minHeight: '80px' }} />
                             </div>
-                            <div className="grid-form-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                                <div>
-                                    <label className="form-label">提出期限（任意）</label>
-                                    <input type="datetime-local" className="form-input" value={ideaDeadline} onChange={e => setIdeaDeadline(e.target.value)} />
-                                </div>
-                                <div>
-                                    <label className="form-label">対象ロール（未選択=全員）</label>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
-                                        {allRoles.map(role => (
-                                            <button key={role}
-                                                className={`btn btn-sm ${ideaRoles.includes(role) ? 'btn-primary' : 'btn-secondary'}`}
-                                                style={{ fontSize: '0.7rem' }}
-                                                onClick={() => setIdeaRoles(prev =>
-                                                    prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role]
-                                                )}
-                                            >{role}</button>
-                                        ))}
-                                    </div>
-                                </div>
+                            <div style={{ marginBottom: '0.75rem' }}>
+                                <label className="form-label">提出期限（任意）</label>
+                                <input type="datetime-local" className="form-input" value={ideaDeadline} onChange={e => setIdeaDeadline(e.target.value)} />
                             </div>
                             {ideaMsg && <div className={ideaMsg.startsWith('✅') ? 'success-message' : 'error-message'} style={{ marginBottom: '0.5rem' }}>{ideaMsg}</div>}
                             <button className="btn btn-primary" disabled={!ideaTitle.trim()}
@@ -1145,12 +1100,12 @@ export default function AdminPage() {
                                     const res = await fetch('/api/admin/ideas', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ title: ideaTitle, description: ideaDesc, targetRoles: ideaRoles, deadline: ideaDeadline || null }),
+                                        body: JSON.stringify({ title: ideaTitle, description: ideaDesc, deadline: ideaDeadline || null }),
                                     });
                                     const d = await res.json();
                                     if (d.success) {
                                         setIdeaMsg('✅ 募集を作成しました');
-                                        setIdeaTitle(''); setIdeaDesc(''); setIdeaDeadline(''); setIdeaRoles([]);
+                                        setIdeaTitle(''); setIdeaDesc(''); setIdeaDeadline('');
                                         fetchAll();
                                     } else setIdeaMsg('❌ ' + d.error);
                                     setTimeout(() => setIdeaMsg(''), 3000);
@@ -1173,9 +1128,7 @@ export default function AdminPage() {
                                                     <div>
                                                         <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{r.title}</div>
                                                         <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                                                            {r.deadline && `📅 ${new Date(r.deadline).toLocaleString('ja-JP')} `}
-                                                            {r.target_roles?.length > 0 && `👥 ${r.target_roles.join(', ')} `}
-                                                            📝 {r.submissions?.length || 0}件の提出
+                                                            {r.deadline && `📅 ${new Date(r.deadline).toLocaleString('ja-JP')} `}                                                            📝 {r.submissions?.length || 0}件の提出
                                                         </div>
                                                     </div>
                                                     <div style={{ display: 'flex', gap: '0.375rem', flexShrink: 0 }}>
@@ -1213,9 +1166,9 @@ export default function AdminPage() {
                                                         {r.submissions?.length > 0 && (
                                                             <button className="btn btn-secondary btn-sm" style={{ fontSize: '0.65rem' }}
                                                                 onClick={() => {
-                                                                    const header = '名前,ロール,提出日時,内容\n';
+                                                                    const header = '名前,提出日時,内容\n';
                                                                     const rows = r.submissions.map(s =>
-                                                                        `"${(s.display_name || '').replace(/"/g, '""')}","${(s.display_role || '').replace(/"/g, '""')}","${new Date(s.created_at).toLocaleString('ja-JP')}","${(s.content || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`
+                                                                        `"${(s.display_name || '').replace(/"/g, '""')}","${new Date(s.created_at).toLocaleString('ja-JP')}","${(s.content || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`
                                                                     ).join('\n');
                                                                     const bom = '\uFEFF';
                                                                     const blob = new Blob([bom + header + rows], { type: 'text/csv;charset=utf-8;' });
@@ -1241,7 +1194,7 @@ export default function AdminPage() {
                                                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.375rem' }}>
                                                                         <span style={{ fontWeight: 600, fontSize: '0.8rem', color: 'var(--accent-primary)' }}>{s.display_name}</span>
                                                                         <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
-                                                                            {s.display_role && `${s.display_role} ・ `}{new Date(s.created_at).toLocaleString('ja-JP')}
+                                                                            {new Date(s.created_at).toLocaleString('ja-JP')}
                                                                         </span>
                                                                     </div>
                                                                     <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', whiteSpace: 'pre-line', lineHeight: 1.6 }}>{s.content}</div>

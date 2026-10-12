@@ -11,13 +11,12 @@ export async function GET() {
 
     const db = getDb();
     const requests = db.prepare(
-      'SELECT r.*, u.display_name as creator_name FROM idea_requests r LEFT JOIN users u ON r.created_by = u.id ORDER BY r.created_at DESC'
+      'SELECT r.id, r.title, r.description, r.deadline, r.is_active, r.created_by, r.created_at, u.display_name as creator_name FROM idea_requests r LEFT JOIN users u ON r.created_by = u.id ORDER BY r.created_at DESC'
     ).all();
 
     for (const r of requests) {
-      r.target_roles = JSON.parse(r.target_roles || '[]');
       r.submissions = db.prepare(
-        'SELECT s.*, u.display_name, u.display_role FROM idea_submissions s LEFT JOIN users u ON s.user_id = u.id WHERE s.request_id = ? ORDER BY s.created_at DESC'
+        'SELECT s.*, u.display_name FROM idea_submissions s LEFT JOIN users u ON s.user_id = u.id WHERE s.request_id = ? ORDER BY s.created_at DESC'
       ).all(r.id);
     }
 
@@ -33,14 +32,14 @@ export async function POST(req) {
     const user = await getCurrentUser();
     if (!user || user.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-    const { title, description, targetRoles, deadline } = await req.json();
+    const { title, description, deadline } = await req.json();
     if (!title?.trim()) return NextResponse.json({ error: 'タイトルを入力してください' }, { status: 400 });
 
     const db = getDb();
     const id = uuidv4();
     db.prepare(
-      'INSERT INTO idea_requests (id, title, description, target_roles, deadline, created_by) VALUES (?, ?, ?, ?, ?, ?)'
-    ).run(id, title.trim(), description?.trim() || '', JSON.stringify(targetRoles || []), deadline || null, user.id);
+      'INSERT INTO idea_requests (id, title, description, deadline, created_by) VALUES (?, ?, ?, ?, ?)'
+    ).run(id, title.trim(), description?.trim() || '', deadline || null, user.id);
 
     return NextResponse.json({ success: true, id });
   } catch (e) {

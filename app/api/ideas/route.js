@@ -3,7 +3,7 @@ import { getDb } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 import { v4 as uuidv4 } from 'uuid';
 
-// GET - fetch idea requests (user sees active only with role filter)
+// GET - fetch idea requests (every logged-in member sees all active requests)
 export async function GET() {
   try {
     const user = await getCurrentUser();
@@ -11,15 +11,8 @@ export async function GET() {
 
     const db = getDb();
     const requests = db.prepare(
-      "SELECT r.*, u.display_name as creator_name FROM idea_requests r LEFT JOIN users u ON r.created_by = u.id WHERE r.is_active = 1 ORDER BY r.created_at DESC"
+      "SELECT r.id, r.title, r.description, r.deadline, r.is_active, r.created_by, r.created_at, u.display_name as creator_name FROM idea_requests r LEFT JOIN users u ON r.created_by = u.id WHERE r.is_active = 1 ORDER BY r.created_at DESC"
     ).all();
-
-    // Filter by role - show requests where user's role is in target_roles or target_roles is empty
-    const userRole = user.display_role || 'Y2FDメンバー';
-    const filtered = requests.filter(r => {
-      const roles = JSON.parse(r.target_roles || '[]');
-      return roles.length === 0 || roles.includes(userRole);
-    });
 
     // Check which ones user already submitted to
     const submissions = db.prepare(
@@ -27,9 +20,8 @@ export async function GET() {
     ).all(user.id);
     const submittedIds = new Set(submissions.map(s => s.request_id));
 
-    const result = filtered.map(r => ({
+    const result = requests.map(r => ({
       ...r,
-      target_roles: JSON.parse(r.target_roles || '[]'),
       already_submitted: submittedIds.has(r.id),
     }));
 
@@ -65,13 +57,6 @@ export async function POST(req) {
       if (localNow > request.deadline) {
         return NextResponse.json({ error: '提出期限を過ぎています' }, { status: 400 });
       }
-    }
-
-    // Check role
-    const roles = JSON.parse(request.target_roles || '[]');
-    const userRole = user.display_role || 'Y2FDメンバー';
-    if (roles.length > 0 && !roles.includes(userRole)) {
-      return NextResponse.json({ error: '対象ロールではありません' }, { status: 403 });
     }
 
     const id = uuidv4();
