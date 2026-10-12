@@ -9,7 +9,8 @@ export async function PUT(request) {
             return NextResponse.json({ error: 'ログインが必要です' }, { status: 401 });
         }
 
-        const { avatarColor, avatarEmoji, avatarImage, displayName, discordId } = await request.json();
+        // discordId は受け付けない（Discord連携は OAuth2 の連携ボタン経由のみ）
+        const { avatarColor, avatarEmoji, avatarImage, displayName } = await request.json();
 
         const db = getDb();
         const updates = [];
@@ -25,7 +26,6 @@ export async function PUT(request) {
             updates.push('avatar_image = ?'); values.push('');
         }
         if (displayName !== undefined && displayName.trim()) { updates.push('display_name = ?'); values.push(displayName.trim()); }
-        if (discordId !== undefined) { updates.push('discord_id = ?'); values.push(discordId); }
 
         if (updates.length === 0) {
             return NextResponse.json({ error: '更新する項目がありません' }, { status: 400 });

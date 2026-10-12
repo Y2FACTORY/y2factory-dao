@@ -2,6 +2,21 @@ import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { getCurrentUser, hashPassword } from '@/lib/auth';
 import { v4 as uuidv4 } from 'uuid';
+import { isValidDiscordId } from '@/lib/discord';
+
+// 管理者による Discord ID 手動設定のチェック（連携済みユーザー間で重複させない）
+function checkAdminDiscordId(db, discordId, excludeUserId) {
+    if (!isValidDiscordId(discordId)) {
+        return { error: 'Discord ID は数字のユーザーID（17〜20桁）で入力してください', status: 400 };
+    }
+    const dup = db.prepare(
+        'SELECT id FROM users WHERE discord_id = ? AND discord_verified = 1 AND id != ?'
+    ).get(discordId, excludeUserId || '');
+    if (dup) {
+        return { error: 'このDiscord IDは既に別のユーザーと連携済みです', status: 409 };
+    }
+    return null;
+}
 
 export async function GET() {
     try {
@@ -20,6 +35,8 @@ export async function GET() {
         u.member_number,
         u.admin_memo,
         u.discord_id,
+        COALESCE(u.discord_verified, 0) as discord_verified,
+        COALESCE(u.discord_username, '') as discord_username,
         u.raw_password,
         u.created_at,
         (SELECT COALESCE(SUM(amount), 0) FROM points WHERE user_id = u.id AND db_name = 'default') as total_points,
@@ -61,14 +78,21 @@ export async function POST(request) {
             return NextResponse.json({ error: 'このメールアドレスは既に登録されています' }, { status: 409 });
         }
 
+        // 管理者が入力した Discord ID は連携済み扱い
+        const newDiscordId = discordId ? String(discordId).trim() : '';
+        if (newDiscordId) {
+            const err = checkAdminDiscordId(db, newDiscordId, null);
+            if (err) return NextResponse.json({ error: err.error }, { status: err.status });
+        }
+
         const id = uuidv4();
         const passwordHash = await hashPassword(password);
         const colors = ['#6C63FF', '#FF6584', '#43E97B', '#F9A826', '#00C9FF', '#E040FB'];
         const avatarColor = colors[Math.floor(Math.random() * colors.length)];
 
         db.prepare(
-            'INSERT INTO users (id, email, password_hash, display_name, role, avatar_color, member_number, discord_id, raw_password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
-        ).run(id, email, passwordHash, displayName, newRole, avatarColor, memberNumber || '', discordId || '', String(password));
+            'INSERT INTO users (id, email, password_hash, display_name, role, avatar_color, member_number, discord_id, discord_verified, raw_password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        ).run(id, email, passwordHash, displayName, newRole, avatarColor, memberNumber || '', newDiscordId, newDiscordId ? 1 : 0, String(password));
 
         // Give welcome points
         db.prepare(
@@ -102,9 +126,22 @@ export async function PUT(request) {
         }
 
         const db = getDb();
-        const target = db.prepare('SELECT id, email FROM users WHERE id = ?').get(userId);
+        const target = db.prepare('SELECT id, email, discord_id FROM users WHERE id = ?').get(userId);
         if (!target) {
             return NextResponse.json({ error: 'ユーザーが見つかりません' }, { status: 404 });
+        }
+
+        // Discord ID: 値が変わったときだけ更新する（未確認の古い手入力値を、他項目の編集ついでに連携済みにしないため）
+        let discordUpdate = null;
+        if (discordId !== undefined) {
+            const newDiscordId = String(discordId ?? '').trim();
+            if (newDiscordId !== String(target.discord_id || '')) {
+                if (newDiscordId) {
+                    const err = checkAdminDiscordId(db, newDiscordId, userId);
+                    if (err) return NextResponse.json({ error: err.error }, { status: err.status });
+                }
+                discordUpdate = newDiscordId;
+            }
         }
 
         // Check email uniqueness if changed
@@ -135,8 +172,10 @@ export async function PUT(request) {
         if (role !== undefined) {
             db.prepare('UPDATE users SET role = ? WHERE id = ?').run(role, userId);
         }
-        if (discordId !== undefined) {
-            db.prepare('UPDATE users SET discord_id = ? WHERE id = ?').run(discordId, userId);
+        if (discordUpdate !== null) {
+            // 管理者が設定 → 連携済み（空なら連携解除）。ユーザー名は次回 Discord ログイン時に入る
+            db.prepare('UPDATE users SET discord_id = ?, discord_verified = ?, discord_username = ? WHERE id = ?')
+                .run(discordUpdate, discordUpdate ? 1 : 0, '', userId);
         }
 
         return NextResponse.json({ success: true });

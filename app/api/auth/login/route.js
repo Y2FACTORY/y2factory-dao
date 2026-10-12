@@ -17,6 +17,11 @@ export async function POST(request) {
             return NextResponse.json({ error: 'メールアドレスまたはパスワードが正しくありません' }, { status: 401 });
         }
 
+        // Discord連携済みのユーザーは、以降 Discord ログインのみ
+        if (Number(user.discord_verified) === 1) {
+            return NextResponse.json({ error: 'このアカウントはDiscordと連携済みです。「Discordでログイン」からログインしてください' }, { status: 403 });
+        }
+
         const { sessionId, expiresAt } = createSession(user.id);
 
         const response = NextResponse.json({
@@ -30,6 +35,7 @@ export async function POST(request) {
         });
         response.cookies.set('session_id', sessionId, {
             httpOnly: true,
+            secure: true,
             path: '/',
             expires: new Date(expiresAt),
             sameSite: 'lax',

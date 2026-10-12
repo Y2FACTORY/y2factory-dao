@@ -43,6 +43,19 @@ function MyPageContent() {
     const [saveMsg, setSaveMsg] = useState('');
     const [userRoles, setUserRoles] = useState([]);
 
+    // Discord 連携エラー（/api/auth/discord/callback から ?discord_error=... で戻る）
+    const DISCORD_ERROR_MESSAGES = {
+        discord_not_configured: 'Discord連携は現在準備中です。しばらくしてからお試しください',
+        discord_denied: 'Discordでの認証がキャンセルされました',
+        state_mismatch: '認証の有効期限が切れたか、不正なリクエストです。もう一度お試しください',
+        token_failed: 'Discordとの認証に失敗しました。もう一度お試しください',
+        profile_failed: 'Discordのユーザー情報を取得できませんでした',
+        already_linked: 'このDiscordアカウントは既に別のユーザーと連携されています',
+        server_error: 'Discord連携中にエラーが発生しました',
+    };
+    const discordErrorCode = searchParams.get('discord_error');
+    const discordErrorMsg = discordErrorCode ? (DISCORD_ERROR_MESSAGES[discordErrorCode] || 'Discord連携に失敗しました') : '';
+
     const fetchData = useCallback(async (db) => {
         const userRes = await fetch('/api/auth/me');
         const userData = await userRes.json();
@@ -181,6 +194,33 @@ function MyPageContent() {
                         }}>{user.member_number}</div>
                     )}
                     <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{user.display_name}</div>
+
+                    {/* Discord 連携 */}
+                    {searchParams.get('linked') === '1' && Number(user.discord_verified) === 1 && (
+                        <div className="success-message" style={{ marginTop: '1rem' }}>✅ Discordと連携しました。次回からDiscordでログインしてください</div>
+                    )}
+                    {discordErrorMsg && (
+                        <div className="error-message" style={{ marginTop: '1rem' }}>❌ {discordErrorMsg}</div>
+                    )}
+                    <div style={{ marginTop: '1rem' }}>
+                        {Number(user.discord_verified) === 1 ? (
+                            <span style={{
+                                display: 'inline-block',
+                                padding: '0.25rem 0.75rem', borderRadius: '99px',
+                                background: 'rgba(88, 101, 242, 0.15)', border: '1px solid rgba(88, 101, 242, 0.4)',
+                                color: '#5865F2', fontSize: '0.8rem', fontWeight: 600,
+                            }}>Discord連携済み: {user.discord_username || '（ユーザー名は次回ログイン時に表示）'}</span>
+                        ) : (
+                            <div>
+                                <a href="/api/auth/discord/login?mode=link" className="btn btn-sm" style={{ background: '#5865F2', color: 'white', border: 'none' }}>
+                                    Discordと連携する
+                                </a>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+                                    連携すると次回からDiscordでログインできます／メールログインは移行期間終了で廃止
+                                </div>
+                            </div>
+                        )}
+                    </div>
 
                     {/* Avatar Editor */}
                     {showAvatarEditor && (

@@ -1,6 +1,20 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import DiscordIcon from '@/app/components/DiscordIcon';
+
+// /api/auth/discord/callback から ?error=... で戻ってきたときのメッセージ
+const DISCORD_ERROR_MESSAGES = {
+    discord_not_configured: 'Discordログインは現在準備中です。しばらくしてからお試しください',
+    discord_denied: 'Discordでの認証がキャンセルされました',
+    state_mismatch: '認証の有効期限が切れたか、不正なリクエストです。もう一度お試しください',
+    token_failed: 'Discordとの認証に失敗しました。もう一度お試しください',
+    profile_failed: 'Discordのユーザー情報を取得できませんでした',
+    not_logged_in: 'Discord連携にはログインが必要です。ログインしてからマイページで連携してください',
+    already_linked: 'このDiscordアカウントは既に別のユーザーと連携されています',
+    link_required: 'このDiscordアカウントは既存のアカウントに登録されています。メールアドレスでログインし、マイページの「Discordと連携する」から連携してください',
+    server_error: 'Discordログイン中にエラーが発生しました',
+};
 
 export default function LoginPage() {
     const router = useRouter();
@@ -9,6 +23,11 @@ export default function LoginPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+
+    useEffect(() => {
+        const code = new URLSearchParams(window.location.search).get('error');
+        if (code) setError(DISCORD_ERROR_MESSAGES[code] || 'Discordログインに失敗しました');
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -56,6 +75,17 @@ export default function LoginPage() {
                         <span>{error}</span>
                     </div>
                 )}
+
+                <a href="/api/auth/discord/login?mode=login" className="auth-discord-btn">
+                    <DiscordIcon size={20} />
+                    <span>Discordでログイン</span>
+                </a>
+                <p className="auth-discord-note">
+                    はじめての方もDiscordでログインすると自動で登録されます。<br />
+                    メールアドレスでのログインは移行期間のみです。Discordと連携済みの方はDiscordでログインしてください。
+                </p>
+
+                <div className="auth-divider">または メールアドレスでログイン（移行期間のみ）</div>
 
                 <form onSubmit={handleSubmit} className="auth-form">
                     <div className="auth-input-group">
@@ -136,7 +166,7 @@ export default function LoginPage() {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
                     </svg>
-                    <span>アカウントは管理者が登録します</span>
+                    <span>新規登録はDiscordログインで自動的に行われます</span>
                 </div>
             </div>
         </div>

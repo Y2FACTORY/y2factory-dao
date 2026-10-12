@@ -399,7 +399,7 @@ export default function AdminPage() {
     });
 
     const exportCSV = () => {
-        const headers = ['ID', '会員番号', 'メール', 'パスワード', '表示名', '権限', 'Discord ID', 'ポイント', '投稿数', 'コメント数', '投票数', 'リアクション数', '登録日', 'メモ'];
+        const headers = ['ID', '会員番号', 'メール', 'パスワード', '表示名', '権限', 'Discord ID', 'Discord連携', 'Discordユーザー名', 'ポイント', '投稿数', 'コメント数', '投票数', 'リアクション数', '登録日', 'メモ'];
         const rows = filteredUsers.map(u => [
             u.id,
             u.member_number || '',
@@ -408,6 +408,8 @@ export default function AdminPage() {
             u.display_name,
             u.role === 'admin' ? '管理者' : 'メンバー',
             u.discord_id || '',
+            Number(u.discord_verified) === 1 ? '連携済み' : '未連携',
+            u.discord_username || '',
             u.total_points,
             u.post_count,
             u.comment_count,
@@ -560,8 +562,8 @@ export default function AdminPage() {
                                         <input type="text" className="form-input" placeholder="No.00001" value={newUserMemberNum} onChange={e => setNewUserMemberNum(e.target.value)} style={{ fontFamily: 'monospace' }} />
                                     </div>
                                     <div>
-                                        <label className="form-label">Discord ID</label>
-                                        <input type="text" className="form-input" placeholder="例: username" value={newUserDiscordId} onChange={e => setNewUserDiscordId(e.target.value)} />
+                                        <label className="form-label">Discord ID <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>（任意・数字のユーザーID。入力すると連携済みになります）</span></label>
+                                        <input type="text" className="form-input" placeholder="例: 123456789012345678" value={newUserDiscordId} onChange={e => setNewUserDiscordId(e.target.value)} inputMode="numeric" />
                                     </div>
                                 </div>
                                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', marginBottom: '0.75rem' }}>
@@ -612,6 +614,17 @@ export default function AdminPage() {
                                                                 background: roleColor + '22', border: `1px solid ${roleColor}44`, color: roleColor,
                                                             }}>管理者</span>
                                                         )}
+                                                        {Number(u.discord_verified) === 1 ? (
+                                                            <span style={{
+                                                                padding: '0.15rem 0.5rem', borderRadius: '99px', fontSize: '0.65rem', fontWeight: 600,
+                                                                background: 'rgba(88,101,242,0.15)', border: '1px solid rgba(88,101,242,0.4)', color: '#5865F2',
+                                                            }}>Discord連携済み{u.discord_username ? ` (${u.discord_username})` : ''}</span>
+                                                        ) : (
+                                                            <span style={{
+                                                                padding: '0.15rem 0.5rem', borderRadius: '99px', fontSize: '0.65rem', fontWeight: 600,
+                                                                background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'var(--text-muted)',
+                                                            }}>未連携</span>
+                                                        )}
                                                     </div>
                                                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{u.email}</div>
                                                     {u.raw_password ? (
@@ -625,7 +638,7 @@ export default function AdminPage() {
                                                     )}
                                                     {u.discord_id && (
                                                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-                                                            <span style={{ color: '#5865F2', fontWeight: 600 }}>Discord:</span> {u.discord_id}
+                                                            <span style={{ color: '#5865F2', fontWeight: 600 }}>Discord:</span> {u.discord_id}{Number(u.discord_verified) === 1 ? '' : '（未確認）'}
                                                         </div>
                                                     )}
                                                 </div>
@@ -806,8 +819,8 @@ export default function AdminPage() {
                                                 )}
                                             </div>
                                             <div>
-                                                <label className="form-label">Discord ID</label>
-                                                <input type="text" className="form-input" placeholder="例: username#1234 または username" value={editUserDiscordId} onChange={e => setEditUserDiscordId(e.target.value)} />
+                                                <label className="form-label">Discord ID <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>（数字のユーザーID。変更すると連携済みになります／空にすると連携解除）</span></label>
+                                                <input type="text" className="form-input" placeholder="例: 123456789012345678" value={editUserDiscordId} onChange={e => setEditUserDiscordId(e.target.value)} inputMode="numeric" />
                                             </div>
                                             <div>
                                                 <label className="form-label">📝 メモ <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>(管理者のみ閲覧可能)</span></label>

@@ -1,42 +1,9 @@
 'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import DiscordIcon from '@/app/components/DiscordIcon';
 
+// メールアドレスでの新規登録は終了。Discord ログインで自動登録される
 export default function RegisterPage() {
-    const router = useRouter();
-    const [displayName, setDisplayName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        if (password.length < 6) {
-            setError('パスワードは6文字以上で入力してください');
-            return;
-        }
-        setLoading(true);
-        try {
-            const res = await fetch('/api/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password, displayName }),
-            });
-            const data = await res.json();
-            if (data.success) {
-                window.location.href = '/dashboard';
-            } else {
-                setError(data.error || '登録に失敗しました');
-            }
-        } catch {
-            setError('登録に失敗しました');
-        }
-        setLoading(false);
-    };
-
     return (
         <div className="auth-page">
             <div className="auth-card animate-slide-up">
@@ -46,47 +13,18 @@ export default function RegisterPage() {
                 <h1 className="auth-title">参加しよう</h1>
                 <p className="auth-subtitle">Y2FACTORY DAOの一員になろう</p>
 
-                {error && <div className="error-message">{error}</div>}
+                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.7, margin: '1.5rem 0', textAlign: 'center' }}>
+                    メンバー登録はDiscordアカウントで行います。<br />
+                    下のボタンからDiscordでログインすると、自動で登録されます。
+                </p>
 
-                <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label className="form-label">表示名</label>
-                        <input
-                            type="text"
-                            className="form-input"
-                            value={displayName}
-                            onChange={e => setDisplayName(e.target.value)}
-                            placeholder="あなたのニックネーム"
-                            required
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label className="form-label">メールアドレス</label>
-                        <input
-                            type="email"
-                            className="form-input"
-                            value={email}
-                            onChange={e => setEmail(e.target.value)}
-                            placeholder="your@email.com"
-                            required
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label className="form-label">パスワード</label>
-                        <input
-                            type="password"
-                            className="form-input"
-                            value={password}
-                            onChange={e => setPassword(e.target.value)}
-                            placeholder="6文字以上"
-                            required
-                            minLength={6}
-                        />
-                    </div>
-                    <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }} disabled={loading}>
-                        {loading ? '登録中...' : 'アカウントを作成'}
-                    </button>
-                </form>
+                <a href="/api/auth/discord/login?mode=login" className="auth-discord-btn">
+                    <DiscordIcon size={20} />
+                    <span>Discordで登録 / ログイン</span>
+                </a>
+                <p className="auth-discord-note">
+                    メールアドレスでの新規登録は終了しました。
+                </p>
 
                 <div className="auth-footer">
                     既にアカウントをお持ちの方は <Link href="/login">ログイン</Link>
