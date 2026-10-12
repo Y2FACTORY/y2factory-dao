@@ -67,6 +67,10 @@ export async function POST(request) {
         if (!email || !password || !displayName) {
             return NextResponse.json({ error: 'メール、パスワード、表示名は必須です' }, { status: 400 });
         }
+        // Discord自動登録用のプレースホルダーメールは予約済み
+        if (String(email).toLowerCase().endsWith('@users.y2factory-dao.local')) {
+            return NextResponse.json({ error: 'このメールアドレスは使用できません' }, { status: 400 });
+        }
         if (role !== undefined && role !== 'admin' && role !== 'member') {
             return NextResponse.json({ error: '権限の値が不正です' }, { status: 400 });
         }

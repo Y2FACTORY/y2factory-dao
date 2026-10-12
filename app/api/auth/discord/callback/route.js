@@ -150,15 +150,8 @@ export async function GET(request) {
             const createTx = db.transaction(() => {
                 const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
                 if (existing) {
-                    // プレースホルダーメールが既にある（同時リクエスト等）→ そのユーザーを連携済みにして使う
-                    const dup = db.prepare(
-                        'SELECT id FROM users WHERE discord_id = ? AND discord_verified = 1 AND id != ?'
-                    ).get(discordUser.id, existing.id);
-                    if (dup) throw new DiscordAuthError('already_linked');
-                    db.prepare(
-                        'UPDATE users SET discord_id = ?, discord_verified = 1, discord_username = ? WHERE id = ?'
-                    ).run(discordUser.id, discordUser.username, existing.id);
-                    return existing.id;
+                    // プレースホルダーメールを他人が先に作っていた場合に乗っ取られないよう、既存アカウントは流用しない
+                    throw new DiscordAuthError('account_conflict');
                 }
                 db.prepare(
                     'INSERT INTO users (id, email, password_hash, display_name, role, avatar_color, raw_password, discord_id, discord_verified, discord_username) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'

@@ -12,7 +12,8 @@ const DISCORD_ERROR_MESSAGES = {
     profile_failed: 'Discordのユーザー情報を取得できませんでした',
     not_logged_in: 'Discord連携にはログインが必要です。ログインしてからマイページで連携してください',
     already_linked: 'このDiscordアカウントは既に別のユーザーと連携されています',
-    link_required: 'このDiscordアカウントは既存のアカウントに登録されています。メールアドレスでログインし、マイページの「Discordと連携する」から連携してください',
+    link_required: 'このDiscordアカウントは既存のアカウントに登録されています。メールアドレスでログインし、マイページの「Discordと連携する」から連携してください。心当たりがない場合はDiscordで運営にご連絡ください',
+    account_conflict: 'アカウントを作成できませんでした。Discordで運営にご連絡ください',
     server_error: 'Discordログイン中にエラーが発生しました',
 };
 
