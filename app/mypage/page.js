@@ -22,9 +22,9 @@ function MyPageContent() {
     const [user, setUser] = useState(null);
     const [data, setData] = useState(null);
     const [currentDb, setCurrentDb] = useState('default');
-    const VALID_TABS = ['manual', 'notifications', 'governance', 'points'];
+    const VALID_TABS = ['notifications', 'governance', 'points'];
     const initialTab = searchParams.get('tab');
-    const [activeTab, setActiveTab] = useState(VALID_TABS.includes(initialTab) ? initialTab : 'manual');
+    const [activeTab, setActiveTab] = useState(VALID_TABS.includes(initialTab) ? initialTab : 'notifications');
 
     // Governance
     const [proposals, setProposals] = useState([]);
@@ -301,7 +301,6 @@ function MyPageContent() {
                 )}
 
                 <div className="tab-nav">
-                    <button className={`tab-btn ${activeTab === 'manual' ? 'active' : ''}`} onClick={() => setActiveTab('manual')}>📖 マニュアル</button>
                     <button className={`tab-btn ${activeTab === 'notifications' ? 'active' : ''}`} onClick={() => setActiveTab('notifications')} style={{ position: 'relative' }}>
                         🔔 通知
                         {unreadCount > 0 && (
@@ -316,106 +315,6 @@ function MyPageContent() {
                     <button className={`tab-btn ${activeTab === 'governance' ? 'active' : ''}`} onClick={() => setActiveTab('governance')}>🗳️ ガバナンス</button>
                     <button className={`tab-btn ${activeTab === 'points' ? 'active' : ''}`} onClick={() => setActiveTab('points')}>ポイント履歴</button>
                 </div>
-
-                {activeTab === 'manual' && (
-                    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {/* Header */}
-                        <div className="card" style={{ padding: '1.25rem 1.5rem', background: 'rgba(108,99,255,0.05)' }}>
-                            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>📖 Y2FACTORY DAO 利用マニュアル</h3>
-                            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.25rem 0 0' }}>プラットフォームの使い方ガイド</p>
-                        </div>
-
-                        {/* ポイント獲得一覧 */}
-                        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                            <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-                                <span style={{ fontSize: '1.25rem' }}>📊</span>
-                                <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>ポイント獲得一覧</span>
-                            </div>
-                            {[
-                                { icon: '🎉', name: 'ウェルカムボーナス', desc: '新規登録時に付与', pts: '500P', color: 'var(--success)' },
-                                { icon: '🤝', name: '友達紹介ボーナス', desc: '紹介者と被紹介者の両方に付与', pts: '1,000P', color: 'var(--success)' },
-                                { icon: '⚔️', name: 'ランブル報酬', desc: '1勝利ごとに付与', pts: '50P', color: 'var(--success)' },
-                                { icon: '👋', name: '挨拶ミッション報酬', desc: 'ミッション達成時に付与', pts: '1,000P', color: 'var(--success)' },
-                                { icon: '⬆️', name: 'レベルアップ報酬', desc: 'レベル × 100P', pts: 'Lv × 100P', color: 'var(--info)' },
-                            ].map((item, i, arr) => (
-                                <div key={i} style={{ padding: '0.75rem 1.25rem', borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                        <span style={{ fontSize: '1.25rem' }}>{item.icon}</span>
-                                        <div>
-                                            <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>{item.name}</div>
-                                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{item.desc}</div>
-                                        </div>
-                                    </div>
-                                    <div style={{ fontWeight: 800, fontSize: '0.95rem', color: item.color, background: item.color === 'var(--info)' ? 'rgba(0,201,255,0.1)' : 'rgba(67,233,123,0.1)', padding: '0.2rem 0.6rem', borderRadius: '99px' }}>{item.pts}</div>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Section 1: はじめに */}
-                        {[{
-                            icon: '🌟', title: 'はじめに',
-                            items: [
-                                { q: 'Y2FACTORY DAOとは？', a: 'Y2FACTORY DAOは、コミュニティメンバーがポイントを獲得し、投票を通じて意思決定に参加できるSNS型ガバナンスプラットフォームです。' },
-                                { q: 'ログイン方法', a: 'ご登録の際のメールアドレスと運営から共有されたパスワードでログインできます。初回ログイン時にウェルカムボーナスとして500Pが付与されます。' },
-                            ]
-                        }, {
-                            icon: '🗳️', title: '投票の仕組み',
-                            items: [
-                                { q: '投票とは？', a: '運営から提案された議題に対して、保有ポイントを配分して投票できます。各選択肢にポイントを振り分けることで、あなたの意見を反映できます。投票に使用したポイントは消費されます。' },
-                                { q: '投票方法', a: '1. 「投票」ページで開催中の議題を確認\n2. 議題をクリックして詳細ページへ移動\n3. 各選択肢にスライダーまたは数値入力でポイントを配分\n   ・「全額」ボタン：1つの選択肢に全ポイント投入\n   ・「均等配分」ボタン：全選択肢に均等配分\n   ・「リセット」ボタン：配分をやり直し\n4. 「○○ptを消費して投票する」ボタンで確定' },
-                                { q: '投票期限について', a: '各議題には投票期限が設定されています。期限が過ぎると自動的に終了し、結果が確定します。' },
-                                { q: '注意事項', a: '⚠️ 一度投票すると取り消しはできません。投票に使ったポイントは保有ポイントから差し引かれます（累計ポイントには影響しません）。' },
-                            ]
-                        }, {
-                            icon: '💰', title: 'ポイントについて',
-                            items: [
-                                { q: 'ポイントの種類', a: '「累計ポイント」は運営から付与されたポイントの合計です。「保有ポイント」は投票に使える現在の残高です。' },
-                                { q: 'ポイント獲得方法', a: 'ポイント表タブで各種報酬の詳細を確認できます。ウェルカムボーナス、友達紹介ボーナス（紹介者と被紹介者の両方に付与）、ランブル勝利、挨拶ミッション、レベルアップなどがあります。' },
-                                { q: 'ポイントの消費', a: '投票時に指定したポイントが保有ポイントから差し引かれます。ただし累計ポイントには影響しません。' },
-                            ]
-                        }, {
-                            icon: '👤', title: 'マイページの使い方',
-                            items: [
-                                { q: 'アイコンの変更', a: 'アイコンをクリックすると編集パネルが開きます。絵文字と背景カラーを選んで設定できます。' },
-                                { q: 'ポイント履歴', a: '「ポイント履歴」タブで過去のポイント付与・消費の詳細を確認できます。' },
-                                { q: '投票履歴', a: '「投票履歴」タブで過去の投票内容を確認できます。' },
-                                { q: '通知', a: '「通知」タブで運営からのお知らせや投票の開始・終了通知を確認できます。未読の通知はバッジで表示されます。' },
-                            ]
-                        }, {
-                            icon: '❓', title: 'よくある質問',
-                            items: [
-                                { q: 'ポイントが反映されない', a: 'ポイントの付与は運営が行います。反映までに時間がかかる場合があります。お待ちください。' },
-                                { q: '投票を取り消したい', a: '一度投票した内容は取り消せません。慎重に投票してください。' },
-                                { q: '困ったときは？', a: 'ご不明な点は、Discord で運営までご連絡ください。' },
-                            ]
-                        }].map((section, si) => (
-                            <div key={si} className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                                <div style={{
-                                    padding: '1rem 1.25rem',
-                                    borderBottom: '1px solid var(--border)',
-                                    background: 'rgba(255,255,255,0.02)',
-                                    display: 'flex', alignItems: 'center', gap: '0.625rem',
-                                }}>
-                                    <span style={{ fontSize: '1.25rem' }}>{section.icon}</span>
-                                    <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{section.title}</span>
-                                </div>
-                                {section.items.map((item, ii) => (
-                                    <div key={ii} style={{
-                                        padding: '1rem 1.25rem',
-                                        borderBottom: ii < section.items.length - 1 ? '1px solid var(--border)' : 'none',
-                                    }}>
-                                        <div style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--accent-primary)', marginBottom: '0.375rem' }}>
-                                            Q. {item.q}
-                                        </div>
-                                        <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
-                                            {item.a}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ))}
-                    </div>
-                )}
 
                 {activeTab === 'points' && (
                     <div className="card animate-fade-in" style={{ overflow: 'auto' }}>
