@@ -134,9 +134,10 @@ export async function GET(request) {
             db.prepare('UPDATE users SET discord_username = ? WHERE id = ?').run(discordUser.username, user.id);
         } else {
             // 未連携だが同じ Discord ID が手入力で登録済みの既存ユーザーがいる → 二重アカウントを作らず、メールログイン後の連携を促す
+            // 既存の手入力欄は数字IDのほか「ユーザー名」や「name#1234」で入っていることが多いので、ユーザー名でも照合する
             const unverified = db.prepare(
-                'SELECT id FROM users WHERE discord_id = ? AND (discord_verified IS NULL OR discord_verified = 0)'
-            ).get(discordUser.id);
+                "SELECT id FROM users WHERE (discord_verified IS NULL OR discord_verified = 0) AND (discord_id = ? OR (? != '' AND LOWER(CASE WHEN INSTR(discord_id, '#') > 0 THEN SUBSTR(discord_id, 1, INSTR(discord_id, '#') - 1) ELSE discord_id END) = LOWER(?)))"
+            ).get(discordUser.id, discordUser.username, discordUser.username);
             if (unverified) return fail('link_required');
 
             // 未登録 → 新規ユーザーを自動作成（メール/パスワードではログインできない状態）
