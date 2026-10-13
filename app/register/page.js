@@ -15,12 +15,13 @@ export default function RegisterPage() {
 
                 <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.7, margin: '1.5rem 0', textAlign: 'center' }}>
                     メンバー登録はDiscordアカウントで行います。<br />
-                    下のボタンからDiscordでログインすると、自動で登録されます。
+                    下のボタンからDiscordで認証すると、登録されます。<br />
+                    ※すでにアカウントをお持ちの方は、ここではなく<a href="/login">ログイン</a>後にマイページから連携してください。
                 </p>
 
-                <a href="/api/auth/discord/login?mode=login" className="auth-discord-btn">
+                <a href="/api/auth/discord/login?mode=register" className="auth-discord-btn">
                     <DiscordIcon size={20} />
-                    <span>Discordで登録 / ログイン</span>
+                    <span>Discordで新規登録</span>
                 </a>
                 <p className="auth-discord-note">
                     メールアドレスでの新規登録は終了しました。

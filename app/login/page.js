@@ -13,6 +13,7 @@ const DISCORD_ERROR_MESSAGES = {
     not_logged_in: 'Discord連携にはログインが必要です。ログインしてからマイページで連携してください',
     already_linked: 'このDiscordアカウントは既に別のユーザーと連携されています',
     link_required: 'このDiscordアカウントは既存のアカウントに登録されています。メールアドレスでログインし、マイページの「Discordと連携する」から連携してください。心当たりがない場合はDiscordで運営にご連絡ください',
+    not_linked: 'このDiscordアカウントはまだ連携されていません。既にアカウントをお持ちの方はメールアドレスでログインし、マイページで連携してください。はじめての方は新規登録ページからどうぞ',
     account_conflict: 'アカウントを作成できませんでした。Discordで運営にご連絡ください',
     server_error: 'Discordログイン中にエラーが発生しました',
 };
@@ -82,8 +83,9 @@ export default function LoginPage() {
                     <span>Discordでログイン</span>
                 </a>
                 <p className="auth-discord-note">
-                    はじめての方もDiscordでログインすると自動で登録されます。<br />
-                    メールアドレスでのログインは移行期間のみです。Discordと連携済みの方はDiscordでログインしてください。
+                    Discordと連携済みの方はこちらからログインしてください。<br />
+                    まだ連携していない方は、下のメールアドレスでログインし、マイページで「Discordと連携する」を押してください（メールログインは移行期間のみ）。<br />
+                    はじめての方は <a href="/register">新規登録</a> へ。
                 </p>
 
                 <div className="auth-divider">または メールアドレスでログイン（移行期間のみ）</div>

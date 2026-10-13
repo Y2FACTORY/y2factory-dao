@@ -77,7 +77,8 @@ export async function GET(request) {
     const rawState = request.cookies.get(STATE_COOKIE)?.value || '';
     const dot = rawState.lastIndexOf('.');
     const savedState = dot > 0 ? rawState.slice(0, dot) : '';
-    const mode = dot > 0 && rawState.slice(dot + 1) === 'link' ? 'link' : 'login';
+    const savedMode = dot > 0 ? rawState.slice(dot + 1) : '';
+    const mode = ['link', 'register'].includes(savedMode) ? savedMode : 'login';
 
     // link モードでログイン中ならエラーはマイページに返す（それ以外はログインページ）
     let currentUser = null;
@@ -133,6 +134,9 @@ export async function GET(request) {
             // 表示用のユーザー名を最新に更新
             db.prepare('UPDATE users SET discord_username = ? WHERE id = ?').run(discordUser.username, user.id);
         } else {
+            // ログインボタンからは連携済みアカウントにしか入れない（新規作成は登録ページから）
+            if (mode !== 'register') return fail('not_linked');
+
             // 未連携だが同じ Discord ID が手入力で登録済みの既存ユーザーがいる → 二重アカウントを作らず、メールログイン後の連携を促す
             // 既存の手入力欄は数字IDのほか「ユーザー名」や「name#1234」で入っていることが多いので、ユーザー名でも照合する
             const unverified = db.prepare(

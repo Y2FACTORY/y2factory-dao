@@ -10,7 +10,7 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-// GET /api/auth/discord/login?mode=login|link
+// GET /api/auth/discord/login?mode=login|link|register
 export async function GET(request) {
     const config = getDiscordConfig();
     if (!config.configured) {
@@ -18,7 +18,7 @@ export async function GET(request) {
     }
 
     const modeParam = request.nextUrl.searchParams.get('mode');
-    const mode = modeParam === 'link' ? 'link' : 'login';
+    const mode = ['link', 'register'].includes(modeParam) ? modeParam : 'login';
     const state = generateState();
 
     const authorizeUrl = new URL('https://discord.com/oauth2/authorize');
