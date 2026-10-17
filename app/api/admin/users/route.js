@@ -37,7 +37,6 @@ export async function GET() {
         u.discord_id,
         COALESCE(u.discord_verified, 0) as discord_verified,
         COALESCE(u.discord_username, '') as discord_username,
-        u.raw_password,
         u.created_at,
         (SELECT COALESCE(SUM(amount), 0) FROM points WHERE user_id = u.id AND db_name = 'default') as total_points,
         (SELECT COUNT(*) FROM posts WHERE user_id = u.id) as post_count,
@@ -96,7 +95,7 @@ export async function POST(request) {
 
         db.prepare(
             'INSERT INTO users (id, email, password_hash, display_name, role, avatar_color, member_number, discord_id, discord_verified, raw_password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-        ).run(id, email, passwordHash, displayName, newRole, avatarColor, memberNumber || '', newDiscordId, newDiscordId ? 1 : 0, String(password));
+        ).run(id, email, passwordHash, displayName, newRole, avatarColor, memberNumber || '', newDiscordId, newDiscordId ? 1 : 0, '');
 
         // Give welcome points
         db.prepare(
@@ -168,7 +167,8 @@ export async function PUT(request) {
         }
         if (password && password.trim()) {
             const passwordHash = await hashPassword(password);
-            db.prepare('UPDATE users SET password_hash = ?, raw_password = ? WHERE id = ?').run(passwordHash, String(password), userId);
+            // 平文パスワードは保存しない
+            db.prepare("UPDATE users SET password_hash = ?, raw_password = '' WHERE id = ?").run(passwordHash, userId);
         }
         if (adminMemo !== undefined) {
             db.prepare('UPDATE users SET admin_memo = ? WHERE id = ?').run(adminMemo, userId);

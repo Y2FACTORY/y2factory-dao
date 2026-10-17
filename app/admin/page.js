@@ -399,12 +399,11 @@ export default function AdminPage() {
     });
 
     const exportCSV = () => {
-        const headers = ['ID', '会員番号', 'メール', 'パスワード', '表示名', '権限', 'Discord ID', 'Discord連携', 'Discordユーザー名', 'ポイント', '投稿数', 'コメント数', '投票数', 'リアクション数', '登録日', 'メモ'];
+        const headers = ['ID', '会員番号', 'メール', '表示名', '権限', 'Discord ID', 'Discord連携', 'Discordユーザー名', 'ポイント', '投稿数', 'コメント数', '投票数', 'リアクション数', '登録日', 'メモ'];
         const rows = filteredUsers.map(u => [
             u.id,
             u.member_number || '',
             u.email,
-            u.raw_password ? `="${String(u.raw_password)}"` : '',
             u.display_name,
             u.role === 'admin' ? '管理者' : 'メンバー',
             u.discord_id || '',
@@ -627,15 +626,6 @@ export default function AdminPage() {
                                                         )}
                                                     </div>
                                                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{u.email}</div>
-                                                    {u.raw_password ? (
-                                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-                                                            <span style={{ fontWeight: 600 }}>🔑 PW:</span> <code style={{ fontSize: '0.7rem', padding: '0.1rem 0.3rem', background: 'rgba(255,255,255,0.06)', borderRadius: '3px' }}>{u.raw_password}</code>
-                                                        </div>
-                                                    ) : (
-                                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem', opacity: 0.5 }}>
-                                                            <span style={{ fontWeight: 600 }}>🔑 PW:</span> 未設定
-                                                        </div>
-                                                    )}
                                                     {u.discord_id && (
                                                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
                                                             <span style={{ color: '#5865F2', fontWeight: 600 }}>Discord:</span> {u.discord_id}{Number(u.discord_verified) === 1 ? '' : '（未確認）'}
