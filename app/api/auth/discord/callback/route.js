@@ -11,6 +11,8 @@ import {
     stateCookieOptions,
     sessionCookieOptions,
     isValidDiscordId,
+    Y2F_GUILD_ID,
+    isAccountOldEnough,
 } from '@/lib/discord';
 
 export const dynamic = 'force-dynamic';
@@ -66,6 +68,19 @@ async function fetchDiscordUser(accessToken) {
         username: String(data.username || ''),
         globalName: data.global_name ? String(data.global_name) : '',
     };
+}
+
+async function isY2fMember(accessToken) {
+    const res = await fetch('https://discord.com/api/users/@me/guilds', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        cache: 'no-store',
+    });
+    if (!res.ok) {
+        console.error('Discord guilds fetch failed: status', res.status);
+        throw new DiscordAuthError('profile_failed');
+    }
+    const guilds = await res.json();
+    return Array.isArray(guilds) && guilds.some((g) => String(g.id) === Y2F_GUILD_ID);
 }
 
 // GET /api/auth/discord/callback
@@ -143,6 +158,10 @@ export async function GET(request) {
                 "SELECT id FROM users WHERE (discord_verified IS NULL OR discord_verified = 0) AND (discord_id = ? OR (? != '' AND LOWER(CASE WHEN INSTR(discord_id, '#') > 0 THEN SUBSTR(discord_id, 1, INSTR(discord_id, '#') - 1) ELSE discord_id END) = LOWER(?)))"
             ).get(discordUser.id, discordUser.username, discordUser.username);
             if (unverified) return fail('link_required');
+
+            // 捨てアカでの大量登録対策
+            if (!isAccountOldEnough(discordUser.id)) return fail('account_too_new');
+            if (!(await isY2fMember(accessToken))) return fail('not_guild_member');
 
             // 未登録 → 新規ユーザーを自動作成（メール/パスワードではログインできない状態）
             const id = uuidv4();

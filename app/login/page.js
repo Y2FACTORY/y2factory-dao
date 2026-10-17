@@ -14,6 +14,8 @@ const DISCORD_ERROR_MESSAGES = {
     already_linked: 'このDiscordアカウントは既に別のユーザーと連携されています',
     link_required: 'このDiscordアカウントは既存のアカウントに登録されています。メールアドレスでログインし、マイページの「Discordと連携する」から連携してください。心当たりがない場合はDiscordで運営にご連絡ください',
     not_linked: 'このDiscordアカウントはまだ連携されていません。既にアカウントをお持ちの方はメールアドレスでログインし、マイページで連携してください。はじめての方は新規登録ページからどうぞ',
+    not_guild_member: '新規登録は Y2FACTORY DAO の Discordサーバーに参加している方のみできます。サーバーに参加してから、もう一度お試しください',
+    account_too_new: '作成から30日未満のDiscordアカウントでは新規登録できません。お手数ですがDiscordで運営にご連絡ください',
     account_conflict: 'アカウントを作成できませんでした。Discordで運営にご連絡ください',
     server_error: 'Discordログイン中にエラーが発生しました',
 };

@@ -24,7 +24,8 @@ export async function GET(request) {
     const authorizeUrl = new URL('https://discord.com/oauth2/authorize');
     authorizeUrl.searchParams.set('response_type', 'code');
     authorizeUrl.searchParams.set('client_id', config.clientId);
-    authorizeUrl.searchParams.set('scope', 'identify');
+    // 新規登録時だけサーバー参加の確認に guilds が要る
+    authorizeUrl.searchParams.set('scope', mode === 'register' ? 'identify guilds' : 'identify');
     authorizeUrl.searchParams.set('state', state);
     authorizeUrl.searchParams.set('redirect_uri', config.redirectUri);
 
