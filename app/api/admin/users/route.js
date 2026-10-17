@@ -169,6 +169,8 @@ export async function PUT(request) {
             const passwordHash = await hashPassword(password);
             // 平文パスワードは保存しない
             db.prepare("UPDATE users SET password_hash = ?, raw_password = '' WHERE id = ?").run(passwordHash, userId);
+            // パスワードを変えたら、そのユーザーのログイン中セッションを切る（操作した管理者自身は除く）
+            db.prepare('DELETE FROM sessions WHERE user_id = ? AND user_id != ?').run(userId, user.id);
         }
         if (adminMemo !== undefined) {
             db.prepare('UPDATE users SET admin_memo = ? WHERE id = ?').run(adminMemo, userId);

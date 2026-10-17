@@ -20,8 +20,9 @@ export async function POST(request) {
             return NextResponse.json({ error: 'ファイルを選択してください' }, { status: 400 });
         }
 
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        if (!allowedTypes.includes(file.type)) {
+        // 拡張子はファイル名ではなく MIME から決める（.html などを置かれないように）
+        const extByType = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/gif': 'gif', 'image/webp': 'webp' };
+        if (!extByType[file.type]) {
             return NextResponse.json({ error: 'JPEG、PNG、GIF、WebP画像のみアップロード可能です' }, { status: 400 });
         }
 
@@ -34,7 +35,7 @@ export async function POST(request) {
             await mkdir(uploadDir, { recursive: true });
         }
 
-        const ext = file.name.split('.').pop();
+        const ext = extByType[file.type];
         const filename = `${uuidv4().slice(0, 12)}.${ext}`;
         const filepath = path.join(uploadDir, filename);
 
