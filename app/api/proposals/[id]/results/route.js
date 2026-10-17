@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
+import { getCurrentUser } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request, { params }) {
     try {
@@ -27,14 +30,15 @@ export async function GET(request, { params }) {
       GROUP BY v.chosen_option
     `).all(proposalId);
 
-        // Get individual votes for transparency
-        const individualVotes = db.prepare(`
+        // 個人ごとの投票内容はログインしたメンバーだけに見せる（未ログインは null）
+        const viewer = await getCurrentUser();
+        const individualVotes = viewer ? db.prepare(`
       SELECT v.chosen_option, v.point_weight, v.created_at, u.display_name
       FROM votes v
       JOIN users u ON v.user_id = u.id
       WHERE v.proposal_id = ?
       ORDER BY v.created_at DESC
-    `).all(proposalId);
+    `).all(proposalId) : null;
 
         const totalWeight = votes.reduce((sum, v) => sum + v.total_weight, 0);
         const totalVoters = db.prepare(

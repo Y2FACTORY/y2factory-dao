@@ -355,7 +355,11 @@ export default function ProposalDetailPage() {
                         <div className="card">
                             <h3 style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '1rem' }}>🔍 投票の透明性</h3>
                             <div className="transparency-list">
-                                {individualVotes && individualVotes.length > 0 ? (
+                                {individualVotes === null ? (
+                                    <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                                        ログインしたメンバーだけ見られます
+                                    </div>
+                                ) : individualVotes && individualVotes.length > 0 ? (
                                     individualVotes.map((v, i) => (
                                         <div key={i} className="transparency-item">
                                             <div>
