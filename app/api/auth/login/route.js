@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { verifyPassword, createSession } from '@/lib/auth';
+import { getClientIp, blockedSeconds, recordFailure, clearFailures } from '@/lib/rateLimit';
 
 export async function POST(request) {
     try {
@@ -10,12 +11,24 @@ export async function POST(request) {
             return NextResponse.json({ error: 'メールアドレスとパスワードを入力してください' }, { status: 400 });
         }
 
+        // 総当たり対策: IP ごと・メールごとに 15分で5回失敗したら止める
+        const limitKeys = ['ip:' + getClientIp(request), 'email:' + String(email).toLowerCase()];
+        const wait = blockedSeconds(limitKeys);
+        if (wait > 0) {
+            return NextResponse.json(
+                { error: `ログインの失敗が続いたため、${Math.ceil(wait / 60)}分ほど待ってからお試しください` },
+                { status: 429 }
+            );
+        }
+
         const db = getDb();
         const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
 
         if (!user || !verifyPassword(password, user.password_hash)) {
+            recordFailure(limitKeys);
             return NextResponse.json({ error: 'メールアドレスまたはパスワードが正しくありません' }, { status: 401 });
         }
+        clearFailures(limitKeys);
 
         // Discord連携済みのユーザーは、以降 Discord ログインのみ
         if (Number(user.discord_verified) === 1) {
