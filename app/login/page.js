@@ -37,10 +37,11 @@ export default function LoginPage() {
         const n = params.get('next') || '';
         // サーバー側（lib/discord.js safeNextPath）と同じ許可リストに加え、同じオリジンに解決されるかも確認する
         // . や .. のパス区切りは正規化で // になり得るので最初から拒否。遷移先は同一オリジンの絶対URLにする
-        if (n.length <= 200 && /^\/(?!\/)[A-Za-z0-9\-._~/?=&%]*$/.test(n) && !/(^|\/)\.{1,2}(\/|$|\?)/.test(n)) {
+        // % は許可しない（%2e などのエンコードされたドットで // にされるのを防ぐ）
+        if (n.length <= 200 && /^\/(?!\/)[A-Za-z0-9\-._~/?=&]*$/.test(n) && !/(^|\/)\.{1,2}(\/|$|\?)/.test(n)) {
             try {
                 const url = new URL(n, window.location.origin);
-                if (url.origin === window.location.origin) setNext(url.pathname + url.search);
+                if (url.origin === window.location.origin && !url.pathname.startsWith('//')) setNext(url.href);
             } catch { /* 不正なURLは無視 */ }
         }
     }, []);
@@ -57,7 +58,7 @@ export default function LoginPage() {
             });
             const data = await res.json();
             if (data.success) {
-                window.location.href = new URL(next || '/dashboard', window.location.origin).href;
+                window.location.href = next || '/dashboard';
             } else {
                 setError(data.error || 'ログインに失敗しました');
             }
@@ -92,7 +93,7 @@ export default function LoginPage() {
                     </div>
                 )}
 
-                <a href={`/api/auth/discord/login?mode=login${next ? `&next=${encodeURIComponent(next)}` : ''}`} className="auth-discord-btn">
+                <a href={`/api/auth/discord/login?mode=login${next ? `&next=${encodeURIComponent(new URL(next).pathname + new URL(next).search)}` : ''}`} className="auth-discord-btn">
                     <DiscordIcon size={20} />
                     <span>Discordでログイン</span>
                 </a>
