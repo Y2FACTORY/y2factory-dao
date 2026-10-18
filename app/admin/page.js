@@ -99,6 +99,7 @@ export default function AdminPage() {
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
         return now.toISOString().slice(0, 16);
     });
+    const [ideaReward, setIdeaReward] = useState('30');
     const [ideaMsg, setIdeaMsg] = useState('');
     const [expandedIdea, setExpandedIdea] = useState(null);
 
@@ -1097,13 +1098,17 @@ export default function AdminPage() {
                                 <label className="form-label">提出期限（任意）</label>
                                 <input type="datetime-local" className="form-input" value={ideaDeadline} onChange={e => setIdeaDeadline(e.target.value)} />
                             </div>
+                            <div style={{ marginBottom: '0.75rem' }}>
+                                <label className="form-label">応募報酬P（提出したら自動で付与・連携済みのみ。0でなし）</label>
+                                <input type="number" min="0" max="1000" className="form-input" value={ideaReward} onChange={e => setIdeaReward(e.target.value)} />
+                            </div>
                             {ideaMsg && <div className={ideaMsg.startsWith('✅') ? 'success-message' : 'error-message'} style={{ marginBottom: '0.5rem' }}>{ideaMsg}</div>}
                             <button className="btn btn-primary" disabled={!ideaTitle.trim()}
                                 onClick={async () => {
                                     const res = await fetch('/api/admin/ideas', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ title: ideaTitle, description: ideaDesc, deadline: ideaDeadline || null }),
+                                        body: JSON.stringify({ title: ideaTitle, description: ideaDesc, deadline: ideaDeadline || null, rewardPoints: ideaReward }),
                                     });
                                     const d = await res.json();
                                     if (d.success) {
@@ -1131,7 +1136,8 @@ export default function AdminPage() {
                                                     <div>
                                                         <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{r.title}</div>
                                                         <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                                                            {r.deadline && `📅 ${new Date(r.deadline).toLocaleString('ja-JP')} `}                                                            📝 {r.submissions?.length || 0}件の提出
+                                                            {r.deadline && `📅 ${new Date(r.deadline).toLocaleString('ja-JP')} `}
+                                                            {r.reward_points > 0 && `🎁 応募${r.reward_points}P `}                                                            📝 {r.submissions?.length || 0}件の提出
                                                         </div>
                                                     </div>
                                                     <div style={{ display: 'flex', gap: '0.375rem', flexShrink: 0 }}>

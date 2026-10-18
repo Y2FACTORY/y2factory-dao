@@ -11,7 +11,7 @@ export async function GET() {
 
     const db = getDb();
     const requests = db.prepare(
-      'SELECT r.id, r.title, r.description, r.deadline, r.is_active, r.created_by, r.created_at, u.display_name as creator_name FROM idea_requests r LEFT JOIN users u ON r.created_by = u.id ORDER BY r.created_at DESC'
+      'SELECT r.id, r.title, r.description, r.deadline, r.is_active, r.reward_points, r.created_by, r.created_at, u.display_name as creator_name FROM idea_requests r LEFT JOIN users u ON r.created_by = u.id ORDER BY r.created_at DESC'
     ).all();
 
     for (const r of requests) {
@@ -32,14 +32,16 @@ export async function POST(req) {
     const user = await getCurrentUser();
     if (!user || user.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-    const { title, description, deadline } = await req.json();
+    const { title, description, deadline, rewardPoints } = await req.json();
     if (!title?.trim()) return NextResponse.json({ error: 'タイトルを入力してください' }, { status: 400 });
+    const reward = parseInt(rewardPoints, 10) || 0;
+    if (reward < 0 || reward > 1000) return NextResponse.json({ error: '応募報酬は0〜1000Pで入力してください' }, { status: 400 });
 
     const db = getDb();
     const id = uuidv4();
     db.prepare(
-      'INSERT INTO idea_requests (id, title, description, deadline, created_by) VALUES (?, ?, ?, ?, ?)'
-    ).run(id, title.trim(), description?.trim() || '', deadline || null, user.id);
+      'INSERT INTO idea_requests (id, title, description, deadline, reward_points, created_by) VALUES (?, ?, ?, ?, ?, ?)'
+    ).run(id, title.trim(), description?.trim() || '', deadline || null, reward, user.id);
 
     return NextResponse.json({ success: true, id });
   } catch (e) {

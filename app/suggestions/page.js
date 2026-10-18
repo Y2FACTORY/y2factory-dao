@@ -90,7 +90,9 @@ export default function SuggestionsPage() {
                                         </div>
                                         {r.description && <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6, whiteSpace: 'pre-line', marginBottom: '0.5rem' }}>{r.description}</div>}
                                         <div style={{ display: 'flex', gap: '1rem', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                                            {r.deadline && <span>📅 期限: {new Date(r.deadline).toLocaleString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>}                                        </div>
+                                            {r.deadline && <span>📅 期限: {new Date(r.deadline).toLocaleString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>}
+                                            {r.reward_points > 0 && <span>🎁 提出で {r.reward_points}P</span>}
+                                        </div>
                                     </div>
 
                                     {/* Expanded submission form */}
@@ -118,7 +120,11 @@ export default function SuggestionsPage() {
                                                         });
                                                         const d = await res.json();
                                                         if (d.success) {
-                                                            setSubmitMsg('✅ 提案を送信しました！');
+                                                            setSubmitMsg(
+                                                                d.rewarded > 0 ? `✅ 提案を送信しました！ ${d.rewarded}Pを付与しました`
+                                                                    : d.rewardPending ? '✅ 提案を送信しました！（ポイントはDiscord連携後に付与されます）'
+                                                                        : '✅ 提案を送信しました！'
+                                                            );
                                                             setSubmitText('');
                                                             fetchData();
                                                         } else setSubmitMsg('❌ ' + d.error);
@@ -133,7 +139,7 @@ export default function SuggestionsPage() {
 
                                     {isExpanded && r.already_submitted && (
                                         <div style={{ padding: '1.25rem 1.5rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                                            ✅ この案件にはすでに提出済みです
+                                            {submitMsg || '✅ この案件にはすでに提出済みです'}
                                         </div>
                                     )}
 

@@ -11,7 +11,7 @@ export async function GET() {
 
     const db = getDb();
     const requests = db.prepare(
-      "SELECT r.id, r.title, r.description, r.deadline, r.is_active, r.created_by, r.created_at, u.display_name as creator_name FROM idea_requests r LEFT JOIN users u ON r.created_by = u.id WHERE r.is_active = 1 ORDER BY r.created_at DESC"
+      "SELECT r.id, r.title, r.description, r.deadline, r.is_active, r.reward_points, r.created_by, r.created_at, u.display_name as creator_name FROM idea_requests r LEFT JOIN users u ON r.created_by = u.id WHERE r.is_active = 1 ORDER BY r.created_at DESC"
     ).all();
 
     // Check which ones user already submitted to
@@ -59,12 +59,34 @@ export async function POST(req) {
       }
     }
 
-    const id = uuidv4();
-    db.prepare(
-      'INSERT INTO idea_submissions (id, request_id, user_id, content) VALUES (?, ?, ?, ?)'
-    ).run(id, requestId, user.id, content.trim());
+    // 1つの募集に提出できるのは1人1回（複数の案は1回の提出にまとめてもらう）
+    const exists = db.prepare(
+      'SELECT 1 FROM idea_submissions WHERE request_id = ? AND user_id = ?'
+    ).get(requestId, user.id);
+    if (exists) return NextResponse.json({ error: 'この募集にはすでに提出済みです' }, { status: 400 });
 
-    return NextResponse.json({ success: true, id });
+    const id = uuidv4();
+    const reward = request.reward_points || 0;
+    const reason = `💡 案募集の応募報酬：${request.title}`;
+    // 応募報酬はサイトとDiscordを連携している人だけ（ランブル報酬などと同じルール）
+    const canReward = reward > 0 && user.discord_verified === 1;
+    db.transaction(() => {
+      db.prepare(
+        'INSERT INTO idea_submissions (id, request_id, user_id, content) VALUES (?, ?, ?, ?)'
+      ).run(id, requestId, user.id, content.trim());
+      if (canReward) {
+        db.prepare(
+          'INSERT INTO points (id, user_id, db_name, amount, reason, granted_by) VALUES (?, ?, ?, ?, ?, ?)'
+        ).run(uuidv4(), user.id, 'default', reward, reason, request.created_by);
+      }
+    })();
+
+    return NextResponse.json({
+      success: true,
+      id,
+      rewarded: canReward ? reward : 0,
+      rewardPending: reward > 0 && !canReward,
+    });
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
