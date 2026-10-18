@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import {
     STATE_COOKIE,
     STATE_MAX_AGE_SEC,
+    NEXT_COOKIE,
+    safeNextPath,
     getDiscordConfig,
     siteUrl,
     generateState,
@@ -31,5 +33,8 @@ export async function GET(request) {
 
     const response = NextResponse.redirect(authorizeUrl.toString());
     response.cookies.set(STATE_COOKIE, `${state}.${mode}`, stateCookieOptions(STATE_MAX_AGE_SEC));
+    // ログイン後に元のページ（募集・投票の個別ページなど）へ戻すための行き先
+    const next = safeNextPath(request.nextUrl.searchParams.get('next'));
+    response.cookies.set(NEXT_COOKIE, next || '', stateCookieOptions(next ? STATE_MAX_AGE_SEC : 0));
     return response;
 }

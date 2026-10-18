@@ -1137,7 +1137,8 @@ export default function AdminPage() {
                                                         <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{r.title}</div>
                                                         <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
                                                             {r.deadline && `📅 ${new Date(r.deadline).toLocaleString('ja-JP')} `}
-                                                            {r.reward_points > 0 && `🎁 応募${r.reward_points}P `}                                                            📝 {r.submissions?.length || 0}件の提出
+                                                            {r.reward_points > 0 && `🎁 応募${r.reward_points}P `}
+                                                            <a href={`/suggestions/${r.id}`} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}>🔗 告知用の個別ページ</a>                                                            📝 {r.submissions?.length || 0}件の提出
                                                         </div>
                                                     </div>
                                                     <div style={{ display: 'flex', gap: '0.375rem', flexShrink: 0 }}>

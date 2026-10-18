@@ -27,10 +27,15 @@ export default function LoginPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    // ログイン後に戻るページ（/login?next=/suggestions/xxx）。サイト内の相対パスだけ使う
+    const [next, setNext] = useState('');
 
     useEffect(() => {
-        const code = new URLSearchParams(window.location.search).get('error');
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get('error');
         if (code) setError(DISCORD_ERROR_MESSAGES[code] || 'Discordログインに失敗しました');
+        const n = params.get('next') || '';
+        if (n.startsWith('/') && !n.startsWith('//') && !n.includes('\\')) setNext(n);
     }, []);
 
     const handleSubmit = async (e) => {
@@ -45,7 +50,7 @@ export default function LoginPage() {
             });
             const data = await res.json();
             if (data.success) {
-                window.location.href = '/dashboard';
+                window.location.href = next || '/dashboard';
             } else {
                 setError(data.error || 'ログインに失敗しました');
             }
@@ -80,7 +85,7 @@ export default function LoginPage() {
                     </div>
                 )}
 
-                <a href="/api/auth/discord/login?mode=login" className="auth-discord-btn">
+                <a href={`/api/auth/discord/login?mode=login${next ? `&next=${encodeURIComponent(next)}` : ''}`} className="auth-discord-btn">
                     <DiscordIcon size={20} />
                     <span>Discordでログイン</span>
                 </a>

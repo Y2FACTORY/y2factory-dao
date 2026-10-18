@@ -5,6 +5,8 @@ import { getDb } from '@/lib/db';
 import { getCurrentUser, hashPassword, createSession } from '@/lib/auth';
 import {
     STATE_COOKIE,
+    NEXT_COOKIE,
+    safeNextPath,
     getDiscordConfig,
     siteUrl,
     safeEqual,
@@ -26,6 +28,7 @@ class DiscordAuthError extends Error {
 
 function clearStateCookie(response) {
     response.cookies.set(STATE_COOKIE, '', stateCookieOptions(0));
+    response.cookies.set(NEXT_COOKIE, '', stateCookieOptions(0));
     return response;
 }
 
@@ -191,7 +194,8 @@ export async function GET(request) {
         }
 
         const { sessionId, expiresAt } = createSession(user.id);
-        const response = NextResponse.redirect(siteUrl('/dashboard', config.redirectUri));
+        const next = safeNextPath(request.cookies.get(NEXT_COOKIE)?.value);
+        const response = NextResponse.redirect(siteUrl(next || '/dashboard', config.redirectUri));
         response.cookies.set('session_id', sessionId, sessionCookieOptions(expiresAt));
         return clearStateCookie(response);
     } catch (error) {

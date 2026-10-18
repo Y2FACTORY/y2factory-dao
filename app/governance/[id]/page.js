@@ -43,7 +43,7 @@ export default function ProposalDetailPage() {
     const fetchData = useCallback(async () => {
         const userRes = await fetch('/api/auth/me');
         const userData = await userRes.json();
-        if (!userData.user) { router.push('/login'); return; }
+        if (!userData.user) { router.push(`/login?next=${encodeURIComponent(window.location.pathname)}`); return; }
         setUser(userData.user);
 
         const res = await fetch(`/api/proposals/${params.id}/results`);
