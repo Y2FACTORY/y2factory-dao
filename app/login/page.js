@@ -36,7 +36,8 @@ export default function LoginPage() {
         if (code) setError(DISCORD_ERROR_MESSAGES[code] || 'Discordログインに失敗しました');
         const n = params.get('next') || '';
         // サーバー側（lib/discord.js safeNextPath）と同じ許可リストに加え、同じオリジンに解決されるかも確認する
-        if (n.length <= 200 && /^\/(?!\/)[A-Za-z0-9\-._~/?=&%]*$/.test(n)) {
+        // . や .. のパス区切りは正規化で // になり得るので最初から拒否。遷移先は同一オリジンの絶対URLにする
+        if (n.length <= 200 && /^\/(?!\/)[A-Za-z0-9\-._~/?=&%]*$/.test(n) && !/(^|\/)\.{1,2}(\/|$|\?)/.test(n)) {
             try {
                 const url = new URL(n, window.location.origin);
                 if (url.origin === window.location.origin) setNext(url.pathname + url.search);
@@ -56,7 +57,7 @@ export default function LoginPage() {
             });
             const data = await res.json();
             if (data.success) {
-                window.location.href = next || '/dashboard';
+                window.location.href = new URL(next || '/dashboard', window.location.origin).href;
             } else {
                 setError(data.error || 'ログインに失敗しました');
             }
