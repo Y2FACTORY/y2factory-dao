@@ -325,6 +325,9 @@ function MyPageContent() {
                         <div className="stat-label">投票回数</div>
                     </div>
                 </div>
+                <div style={{ marginTop: '-1.25rem', marginBottom: '2rem', fontSize: '0.85rem' }}>
+                    <a href="/points">🪙 ポイントのもらい方・使い方 →</a>
+                </div>
 
                 {/* DB Switcher */}
                 {data.databases && data.databases.length > 1 && (
