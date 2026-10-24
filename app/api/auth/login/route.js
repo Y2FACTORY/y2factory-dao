@@ -31,7 +31,9 @@ export async function POST(request) {
         clearFailures(limitKeys);
 
         // Discord連携済みのユーザーは、以降 Discord ログインのみ
-        if (Number(user.discord_verified) === 1) {
+        // 例外: Discordにログインできず運営が手動連携した人（.env.local の EMAIL_LOGIN_ALLOW_IDS にユーザーIDをカンマ区切り）
+        const emailAllowed = (process.env.EMAIL_LOGIN_ALLOW_IDS || '').split(',').map(s => s.trim()).includes(user.id);
+        if (Number(user.discord_verified) === 1 && !emailAllowed) {
             return NextResponse.json({ error: 'このアカウントはDiscordと連携済みです。「Discordでログイン」からログインしてください' }, { status: 403 });
         }
 
